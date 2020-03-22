@@ -1,0 +1,12 @@
+[Unit]
+Description=Service for blog ledinhbao.com
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
