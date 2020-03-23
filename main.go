@@ -82,7 +82,7 @@ func main() {
 	if err != nil {
 		panic("Cannot connect to database." + err.Error())
 	}
-	_ = db
+	defer db.Close()
 	db.AutoMigrate(&User{})
 
 	router.LoadHTMLGlob("templates/*")
@@ -129,6 +129,6 @@ func main() {
 			"message": message,
 		})
 	})
-
+	initializeRoutes(router)
 	router.Run(":9096")
 }
