@@ -10,7 +10,5 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gorilla/sessions v1.2.0 // indirect
 	github.com/jinzhu/gorm v1.9.12
-	github.com/jmoiron/sqlx v1.2.0
-	github.com/mattn/go-sqlite3 v2.0.1+incompatible
 	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df
 )

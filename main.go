@@ -2,16 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/ledinhbao/blog/packages/models"
 )
 
 // L93hxwPc8r
@@ -19,19 +22,9 @@ import (
 // ledinhbao_blog
 
 const (
-	userkey = "user"
+	userkey    = "user"
+	dbInstance = "database"
 )
-
-type User struct {
-	gorm.Model
-	ID              uint `gorm:"PRIMARY_KEY"`
-	Username        string
-	Password        string
-	Role            int
-	PasswordConfirm string `gorm:"-"`
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-}
 
 func hashPassword(pwd string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
@@ -55,16 +48,11 @@ func readConfig() Configuration {
 	return data
 }
 
-func (f User) ValidatePassword() bool {
-	if f.Password != f.PasswordConfirm {
-		return false
-	}
-	return true
-}
-
+// AuthRequired is a middleware to check if the user is authorized or not.
 func AuthRequired(c *gin.Context) {
 	session := sessions.Default(c)
 	user := session.Get(userkey)
+	fmt.Println(user)
 	if user == nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"error": "StatusUnauthorized",
@@ -72,10 +60,27 @@ func AuthRequired(c *gin.Context) {
 	}
 }
 
+func dbHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set(dbInstance, db)
+		c.Next()
+	}
+}
+
+func RandString() string {
+	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b := make([]byte, 10)
+	for i := range b {
+		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
+	}
+	return string(b)
+}
+
 func main() {
 	router := gin.Default()
 
-	router.Use(sessions.Sessions("MainSession", sessions.NewCookieStore([]byte("ledinhbao"))))
+	cookieName := RandString()
+	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))
 	// db, err := sqlx.Connect("mysql", "ledinhbao_axis:L93hxwPc8r@/ledinhbao_blog")
 	// db, err := sqlx.Connect("sqlite3", "database.db")
 	db, err := gorm.Open("sqlite3", "database.db")
@@ -83,7 +88,11 @@ func main() {
 		panic("Cannot connect to database." + err.Error())
 	}
 	defer db.Close()
-	db.AutoMigrate(&User{})
+	// Set database instance for global use
+	router.Use(dbHandler(db))
+
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Post{})
 
 	router.LoadHTMLGlob("templates/*")
 
@@ -103,9 +112,7 @@ func main() {
 	adminRoute.Use(AuthRequired)
 	{
 		adminRoute.GET("/dashboard", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"message": "Admin dashboard",
-			})
+			c.HTML(http.StatusOK, "admin_dashboard.html", gin.H{})
 		})
 	}
 
@@ -116,9 +123,9 @@ func main() {
 	})
 
 	router.POST("/admin/register", func(c *gin.Context) {
-		var formData = User{}
+		var formData = models.User{}
 		formData.Username = c.PostForm("username")
-		formData.Password, _ = hashPassword(c.PostForm("password"))
+		formData.SetPassword(c.PostForm("password"))
 		formData.PasswordConfirm = c.PostForm("password2")
 		formData.Role = 1
 
