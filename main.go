@@ -55,9 +55,8 @@ func AuthRequired(c *gin.Context) {
 	user := session.Get(userkey)
 	fmt.Println(user)
 	if user == nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "StatusUnauthorized",
-		})
+		// unauthorize will be transfer to /admin/login
+		c.Redirect(http.StatusFound, "/admin/login")
 	}
 }
 
@@ -114,7 +113,9 @@ func main() {
 		adminRoute.GET("/dashboard", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "admin_dashboard.html", gin.H{})
 		})
+		adminRoute.GET("/", displayAdminIndex)
 	}
+	router.GET("/admin/login", showAdminLoginPage)
 
 	router.GET("/admin/register", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "admin-register", gin.H{
@@ -139,4 +140,12 @@ func main() {
 	initializeRoutes(router)
 	inititalizePostRoutes(router)
 	router.Run(":9096")
+}
+
+func displayAdminIndex(c *gin.Context) {
+	c.HTML(http.StatusOK, "admin-index.html", gin.H{})
+}
+
+func showAdminLoginPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "admin-login.html", gin.H{})
 }

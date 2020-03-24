@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ .title }} </title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <!-- <link rel="stylesheet" href="/static/css/debug.css"> -->
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: [xl-start] 1fr 1.5em [md-start] minmax(0, 624px) [md-end] 1.5em 1fr [xl-end];
+        }
+        .grid *  { grid-column: md; }
+        .grid-xl { grid-column: xl; }
+    </style>
+</head>
+<body>
+
+    <!-- .section -->
+    <section class="hero is-fullheight">
+
+        <div class="hero-body">
+            <div class="container">
+            <!-- columns -->
+                <div class="columns is-centered">
+                    <div class="column is-5-tablet is-4-desktop is-3-widescreen">
+                        <form action="/admin/login" method="POST" class="box">
+                            <div class="field">
+                                <label class="label" for="username">Admin Username</label>
+                                <div class="control has-icons-left">
+                                    <input class="input" type="text" name="username" id="username" placeholder="Username">
+                                    <span class="icon is-small is-left">
+                                        <i class="fa fa-user"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="password">Password</label>
+                                <div class="control has-icons-left">
+                                    <input class="input" type="text" name="password" id="password" placeholder="Password">
+                                    <span class="icon is-small is-left">
+                                        <i class="fa fa-lock"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control is-centered">
+                                <label class="checkbox">
+                                    <input type="checkbox">
+                                    Remember me
+                                </label>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="control is-centered">
+                                    <input class="button is-link is-medium is-centered is-fullwidth" type="submit" value="Login">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- end ./columns -->
+            </div>
+        </div>
+
+    </section>
+    <!-- END .section -->
+
+    <!-- .section -->
+    <section class="section">
+
+       
+
+    </section>
+    <!-- END .section -->
+
+
+    <!-- .section -->
+    <section class="section">
+        <footer class="footer">
+            <div class="content has-text-centered">
+            <p>
+                <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>. The source code is licensed
+                <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
+                is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+            </p>
+            </div>
+        </footer>
+    </section>
+    <!-- END .section -->
+</body>
+
+<script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+</html>
