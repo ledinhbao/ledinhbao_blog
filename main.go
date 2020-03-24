@@ -15,6 +15,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/foolin/goview"
+	"github.com/foolin/goview/supports/ginview"
 	"github.com/ledinhbao/blog/packages/models"
 )
 
@@ -98,7 +100,15 @@ func main() {
 	// Serving static resources
 	router.Use(static.Serve("/static", static.LocalFile("./static", true)))
 
-	router.LoadHTMLGlob("templates/*")
+	// router.LoadHTMLGlob("templates/*")
+
+	router.HTMLRender = ginview.New(goview.Config{
+		Root:         "views/frontend",
+		Extension:    ".html",
+		Master:       "layout/master",
+		Partials:     []string{},
+		DisableCache: true,
+	})
 
 	router.GET("/setup", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "setup", gin.H{
@@ -108,16 +118,29 @@ func main() {
 
 	router.GET("/", displayPosts)
 
-	adminRoute := router.Group("/admin")
+	backendViewMiddleware := ginview.NewMiddleware(goview.Config{
+		Root:         "views/backend",
+		Extension:    ".html",
+		Master:       "layout/master",
+		Partials:     []string{},
+		DisableCache: true,
+	})
+
+	adminGeneralRoute := router.Group("/admin", backendViewMiddleware)
+	{
+		adminGeneralRoute.GET("/login", showAdminLoginPage)
+		adminGeneralRoute.POST("/postLogin", adminPostLogin)
+	}
+
+	adminRoute := router.Group("/admin", backendViewMiddleware)
 	adminRoute.Use(AuthRequired)
 	{
 		adminRoute.GET("/dashboard", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "admin_dashboard.html", gin.H{})
+			ginview.HTML(c, http.StatusOK, "admin_dashboard", gin.H{})
 		})
 		adminRoute.GET("/", displayAdminIndex)
+		adminRoute.GET("/logout", adminLogout)
 	}
-	router.GET("/admin/login", showAdminLoginPage)
-	router.POST("/admin/postLogin", adminPostLogin)
 
 	router.GET("/admin/register", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "admin-register", gin.H{
@@ -151,14 +174,14 @@ func setSession(c *gin.Context, key string, value string) {
 }
 
 func displayAdminIndex(c *gin.Context) {
-	c.HTML(http.StatusOK, "admin-index.html", gin.H{})
+	ginview.HTML(c, http.StatusOK, "admin-index", gin.H{})
 }
 
 func showAdminLoginPage(c *gin.Context) {
 	session := sessions.Default(c)
 	flashes := session.Flashes("is-error")
 	session.Save()
-	c.HTML(http.StatusOK, "admin-login.html", gin.H{
+	ginview.HTML(c, http.StatusOK, "admin-login.html", gin.H{
 		"errors": flashes,
 	})
 }
@@ -182,4 +205,11 @@ func adminPostLogin(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/admin/login")
 		// c.Abort()
 	}
+}
+
+func adminLogout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+	c.Redirect(http.StatusFound, "/admin/login")
 }
