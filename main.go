@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -94,6 +95,9 @@ func main() {
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Post{})
 
+	// Serving static resources
+	router.Use(static.Serve("/static", static.LocalFile("./static", true)))
+
 	router.LoadHTMLGlob("templates/*")
 
 	router.GET("/setup", func(c *gin.Context) {
@@ -102,11 +106,7 @@ func main() {
 		})
 	})
 
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "Hello world",
-		})
-	})
+	router.GET("/", displayPosts)
 
 	adminRoute := router.Group("/admin")
 	adminRoute.Use(AuthRequired)
@@ -137,5 +137,6 @@ func main() {
 		})
 	})
 	initializeRoutes(router)
+	inititalizePostRoutes(router)
 	router.Run(":9096")
 }
