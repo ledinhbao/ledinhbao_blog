@@ -2,3 +2,4 @@
 *.exe
 database.db
 build/*
+static/.DS_Store
