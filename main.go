@@ -8,12 +8,15 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/foolin/goview"
+	"github.com/foolin/goview/supports/ginview"
 	"github.com/ledinhbao/blog/packages/models"
 )
 
@@ -24,6 +27,7 @@ import (
 const (
 	userkey    = "user"
 	dbInstance = "database"
+	adminkey   = "admin"
 )
 
 func hashPassword(pwd string) (string, error) {
@@ -54,9 +58,8 @@ func AuthRequired(c *gin.Context) {
 	user := session.Get(userkey)
 	fmt.Println(user)
 	if user == nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "StatusUnauthorized",
-		})
+		// unauthorize will be transfer to /admin/login
+		c.Redirect(http.StatusFound, "/admin/login")
 	}
 }
 
@@ -94,7 +97,18 @@ func main() {
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Post{})
 
-	router.LoadHTMLGlob("templates/*")
+	// Serving static resources
+	router.Use(static.Serve("/static", static.LocalFile("./static", true)))
+
+	// router.LoadHTMLGlob("templates/*")
+
+	router.HTMLRender = ginview.New(goview.Config{
+		Root:         "views/frontend",
+		Extension:    ".html",
+		Master:       "layout/master",
+		Partials:     []string{},
+		DisableCache: true,
+	})
 
 	router.GET("/setup", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "setup", gin.H{
@@ -102,18 +116,30 @@ func main() {
 		})
 	})
 
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "Hello world",
-		})
+	router.GET("/", displayPosts)
+
+	backendViewMiddleware := ginview.NewMiddleware(goview.Config{
+		Root:         "views/backend",
+		Extension:    ".html",
+		Master:       "layout/master",
+		Partials:     []string{},
+		DisableCache: true,
 	})
 
-	adminRoute := router.Group("/admin")
+	adminGeneralRoute := router.Group("/admin", backendViewMiddleware)
+	{
+		adminGeneralRoute.GET("/login", showAdminLoginPage)
+		adminGeneralRoute.POST("/postLogin", adminPostLogin)
+	}
+
+	adminRoute := router.Group("/admin", backendViewMiddleware)
 	adminRoute.Use(AuthRequired)
 	{
 		adminRoute.GET("/dashboard", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "admin_dashboard.html", gin.H{})
+			ginview.HTML(c, http.StatusOK, "admin_dashboard", gin.H{})
 		})
+		adminRoute.GET("/", displayAdminIndex)
+		adminRoute.GET("/logout", adminLogout)
 	}
 
 	router.GET("/admin/register", func(c *gin.Context) {
@@ -137,5 +163,53 @@ func main() {
 		})
 	})
 	initializeRoutes(router)
+	inititalizePostRoutes(router)
 	router.Run(":9096")
+}
+
+func setSession(c *gin.Context, key string, value string) {
+	session := sessions.Default(c)
+	session.Set(key, value)
+	session.Save()
+}
+
+func displayAdminIndex(c *gin.Context) {
+	ginview.HTML(c, http.StatusOK, "admin-index", gin.H{})
+}
+
+func showAdminLoginPage(c *gin.Context) {
+	session := sessions.Default(c)
+	flashes := session.Flashes("is-error")
+	session.Save()
+	ginview.HTML(c, http.StatusOK, "admin-login.html", gin.H{
+		"errors": flashes,
+	})
+}
+
+func adminPostLogin(c *gin.Context) {
+	db := c.MustGet(dbInstance).(*gorm.DB)
+	user := models.User{}
+	passwordFromRequest := c.PostForm("password")
+	db.Where("username = ?", c.PostForm("username")).First(&user)
+
+	if user.TryPassword(passwordFromRequest) {
+		session := sessions.Default(c)
+		session.Set(userkey, user.Username)
+		session.Save()
+		c.Redirect(http.StatusFound, "/admin/dashboard")
+		// c.Abort()
+	} else {
+		session := sessions.Default(c)
+		session.AddFlash("Wrong password", "is-error")
+		session.Save()
+		c.Redirect(http.StatusMovedPermanently, "/admin/login")
+		// c.Abort()
+	}
+}
+
+func adminLogout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+	c.Redirect(http.StatusFound, "/admin/login")
 }

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ .title }} </title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <!-- <link rel="stylesheet" href="static/css/debug.css"> -->
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: [xl-start] 1fr 1.5em [md-start] minmax(0, 624px) [md-end] 1.5em 1fr [xl-end];
+        }
+        .grid *  { grid-column: md; }
+        .grid-xl { grid-column: xl; }
+    </style>
+</head>
+<body>
+    <!-- .section -->
+    <section class="section">
+
+        <div class="container grid">
+
+            <!-- .breadcrumb-->
+            <nav class="breadcrumb grid-xl" aria-label="breadcrumb">
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li class="is-active"><a href="#" aria-current="page">{{ .title }}</a></li>
+                </ul>
+            </nav>
+            <!-- END .breadcrumb-->
+        </div>
+
+    </section>
+    <!-- END .section -->
+
+    <!-- .section -->
+    <section class="section">
+
+        <div class="container grid">
+            <div class="tile is-parent">
+                {{ range .posts }}
+                <div class="tile is-child">
+                    <p class="title">{{ .Title }}</p>
+                    <p class="subtitle">{{ .Content }}</p>
+                    <div class="content">
+                        {{ .Content }}
+                    </div>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+
+    </section>
+    <!-- END .section -->
+
+
+    <!-- .section -->
+    <section class="section">
+        <footer class="footer">
+            <div class="content has-text-centered">
+            <p>
+                <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>. The source code is licensed
+                <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
+                is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+            </p>
+            </div>
+        </footer>
+    </section>
+    <!-- END .section -->
+</body>
+
+<script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+</html>
