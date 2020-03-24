@@ -25,6 +25,7 @@ import (
 const (
 	userkey    = "user"
 	dbInstance = "database"
+	adminkey   = "admin"
 )
 
 func hashPassword(pwd string) (string, error) {
@@ -116,6 +117,7 @@ func main() {
 		adminRoute.GET("/", displayAdminIndex)
 	}
 	router.GET("/admin/login", showAdminLoginPage)
+	router.POST("/admin/postLogin", adminPostLogin)
 
 	router.GET("/admin/register", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "admin-register", gin.H{
@@ -142,10 +144,42 @@ func main() {
 	router.Run(":9096")
 }
 
+func setSession(c *gin.Context, key string, value string) {
+	session := sessions.Default(c)
+	session.Set(key, value)
+	session.Save()
+}
+
 func displayAdminIndex(c *gin.Context) {
 	c.HTML(http.StatusOK, "admin-index.html", gin.H{})
 }
 
 func showAdminLoginPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "admin-login.html", gin.H{})
+	session := sessions.Default(c)
+	flashes := session.Flashes("is-error")
+	session.Save()
+	c.HTML(http.StatusOK, "admin-login.html", gin.H{
+		"errors": flashes,
+	})
+}
+
+func adminPostLogin(c *gin.Context) {
+	db := c.MustGet(dbInstance).(*gorm.DB)
+	user := models.User{}
+	passwordFromRequest := c.PostForm("password")
+	db.Where("username = ?", c.PostForm("username")).First(&user)
+
+	if user.TryPassword(passwordFromRequest) {
+		session := sessions.Default(c)
+		session.Set(userkey, user.Username)
+		session.Save()
+		c.Redirect(http.StatusFound, "/admin/dashboard")
+		// c.Abort()
+	} else {
+		session := sessions.Default(c)
+		session.AddFlash("Wrong password", "is-error")
+		session.Save()
+		c.Redirect(http.StatusMovedPermanently, "/admin/login")
+		// c.Abort()
+	}
 }
