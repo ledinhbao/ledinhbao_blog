@@ -27,6 +27,8 @@ const (
 	subscriptionURL = string("https://www.strava.com/api/v3/push_subscriptions")
 )
 
+// Config struct contains configuration for Strava Package
+//   - SubscriptionDBKey	: strava subcsription key, stored in database, indicates exist subscription if present.
 type Config struct {
 	ClientID          string
 	ClientSecret      string
@@ -49,6 +51,7 @@ func (c *Config) GetRevokeURLFor(username string) string {
 }
 func ActiveConfig() *Config { return config }
 
+// Athlete contains data reflects Strava's Athlete data.
 type Athlete struct {
 	gorm.Model
 	Profile       string `json:"profile"`
@@ -62,6 +65,7 @@ type Athlete struct {
 	Lastname      string `json:"lastname"`
 }
 
+// Link (aka Strava Link) contains data linked between app's user & strava's athlete data
 type Link struct {
 	gorm.Model
 	UserID       uint
@@ -102,6 +106,7 @@ func init() {
 	}
 }
 
+// SetConfig ...
 func SetConfig(c Config) {
 	newConfig := Config{}
 	mergo.Merge(&newConfig, c)
