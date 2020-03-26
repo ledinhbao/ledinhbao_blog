@@ -16,6 +16,7 @@ import (
 
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
+	"github.com/ledinhbao/blog/core"
 	"github.com/ledinhbao/blog/packages/models"
 	"github.com/ledinhbao/blog/packages/sports/strava"
 )
@@ -100,6 +101,7 @@ func main() {
 
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Post{})
+	db.AutoMigrate(core.Setting{})
 
 	// Serving static resources
 	router.Use(static.Serve("/static", static.LocalFile("./static", true)))
@@ -167,9 +169,19 @@ func main() {
 	initializeRoutes(router)
 	inititalizePostRoutes(router)
 
-	strava.InitializeRoutes(router, "/admin")
+	// main path: /admin/strava/* -> redirect: /admin/dashboard
+	strava.SetConfig(strava.Config{
+		ClientID:       "44814",
+		ClientSecret:   "c44a13c4308b3b834320ae5e3648d6c7855980a3",
+		PathPrefix:     "/admin",
+		PathRedirect:   "/dashboard",
+		GlobalDatabase: dbInstance,
+	})
+	strava.InitializeRoutes(router)
 	db.AutoMigrate(&strava.Link{})
 	db.AutoMigrate(&strava.Athlete{})
+
+	go strava.CreateSubscription(db)
 	router.Run(":9096")
 }
 
@@ -239,5 +251,6 @@ func displayAdminDashboard(c *gin.Context) {
 		"strava_link":       stravaLink,
 		"athelete":          stravaInfo,
 		"IsStravaConnected": stravaLink.ID > 0,
+		"StravaRevokeURL":   strava.ActiveConfig().GetRevokeURLFor(stravaInfo.Username),
 	})
 }

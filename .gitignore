@@ -3,3 +3,6 @@
 database.db
 build/*
 static/.DS_Store
+views/backend/.DS_Store
+static/images/.DS_Store
+.VSCodeCounter/*
