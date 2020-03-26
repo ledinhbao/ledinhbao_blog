@@ -1,0 +1,77 @@
+{{ define "content" }}
+
+<!-- {{ include "admin-debug" }} -->
+
+<!-- .section -->
+    <section class="section">
+        <div class="container">
+            <div class="tile is-ancestor">
+                <div class="tile is-parent level">
+                    <article class="tile is-child notification is-3 is-info">
+                        <p class="title">Strava</p>
+                        {{ if .IsStravaConnected }}<p class="subtitle">Connected</p>
+                        {{ else }}<p class="subtitle"><a href="https://www.strava.com/oauth/authorize?client_id=44814&redirect_uri=http://localhost:9096/admin/strava&response_type=code&approval_prompt=auto&scope=activity:read">Link Strava</a></p>
+                        {{ end }}
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- END .section -->
+
+    <!-- .section -->
+    <section class="section">
+
+        <div class="container">
+            <div class="columns">
+                <div class="column is-3">
+                    <aside class="menu">
+                        <p class="menu-label">
+                            SERVICES
+                        </p>
+                    </aside>
+                </div>
+
+                <div class="column">
+                    <div class="columns">
+                        <div class="column is-1">
+                            Service
+                        </div>
+                        <div class="column">
+                            Name
+                        </div>
+                    </div>
+                    <div class="columns">
+                        <div class="column is-1">
+                            <figure class="image is-48x48">
+                                <img src="/static/images/strava.webp" class="image is-rounded" />
+                            </figure>
+                        </div>
+                        <div class="column is-2">
+                            <P>Strava</P>
+                        </div>
+                        <div class="column">
+                            {{ if .IsStravaConnected }}Linked to <strong>{{ .athelete.Username }}</strong>
+                            {{ else }}Unlink
+                            {{ end }}
+                            
+                        </div>
+                        <div class="column">
+                            {{ if .IsStravaConnected }}<a class="button">Revoke</a>
+                            {{ else }}<a class="button is-info" href="https://www.strava.com/oauth/authorize?client_id=44814&redirect_uri=http://localhost:9096/admin/strava&response_type=code&approval_prompt=auto&scope=activity:read">Link Strava</a>
+                            {{ end }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+    <!-- END .section -->
+
+    <!-- .section -->
+    <section class="section">
+
+    </section>
+    <!-- END .section -->
+{{ end }}
