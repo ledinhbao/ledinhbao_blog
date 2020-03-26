@@ -1,0 +1,55 @@
+{{ define "content" }}
+
+<!-- {{ include "admin-debug" }} -->
+
+<!-- .section -->
+<section class="section">
+
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3">
+                <aside class="menu">
+                    <p class="menu-label">
+                        SERVICES
+                    </p>
+                </aside>
+            </div>
+
+            <div class="column">
+                <div class="columns">
+                    <div class="column is-size-3">
+                        Services
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-1">
+                        <figure class="image is-48x48">
+                            <img src="/static/images/strava.webp" class="image is-rounded" />
+                        </figure>
+                    </div>
+                    <div class="column is-6">
+                        <P class="is-size-5">Strava</P>
+                        <p>{{ if .IsStravaConnected }}Linked to <strong>{{ .athelete.Username }}</strong>
+                            {{ else }}Unlink
+                            {{ end }}</p>
+                    </div>
+                    <div class="column">
+                        {{ if .IsStravaConnected }}<a class="button" href="{{ .StravaRevokeURL }}">Revoke</a>
+                        {{ else }}<a class="button is-info" href="https://www.strava.com/oauth/authorize?client_id=44814&redirect_uri=http://localhost:9096/admin/strava&response_type=code&approval_prompt=auto&scope=activity:read">Link Strava</a>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="/admin/strava/list/{{ .strava_link.Username}}">List Activities</a>
+
+</section>
+<!-- END .section -->
+
+<!-- .section -->
+<section class="section">
+
+</section>
+<!-- END .section -->
+{{ end }}
