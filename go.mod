@@ -10,6 +10,8 @@ require (
 	github.com/go-playground/form/v4 v4.1.1
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gorilla/sessions v1.2.0 // indirect
+	github.com/imdario/mergo v0.3.9
 	github.com/jinzhu/gorm v1.9.12
+	github.com/mitchellh/mapstructure v1.2.2
 	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df
 )

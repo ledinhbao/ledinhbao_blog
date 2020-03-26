@@ -3,7 +3,7 @@
 <head>
     <title>{{ .title }} </title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
-    <!-- <link rel="stylesheet" href="static/css/debug.css"> -->
+    <link rel="stylesheet" href="/static/css/custom-style.css">
     <style>
         .grid {
             display: grid;
@@ -14,6 +14,10 @@
     </style>
 </head>
 <body>
+    {{ if not .user }}
+    <div class="notification is-danger is-light">Missing "user" variable.</div>
+    {{ end }}
+
     {{ include "layout/admin-navbar" }}
 
     {{ template "content" . }}

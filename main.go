@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -17,7 +16,9 @@ import (
 
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
+	"github.com/ledinhbao/blog/core"
 	"github.com/ledinhbao/blog/packages/models"
+	"github.com/ledinhbao/blog/packages/sports/strava"
 )
 
 // L93hxwPc8r
@@ -25,9 +26,12 @@ import (
 // ledinhbao_blog
 
 const (
-	userkey    = "user"
-	dbInstance = "database"
-	adminkey   = "admin"
+	userkey       = "user"
+	dbInstance    = "database"
+	adminkey      = "admin"
+	stravaAuthURL = "https://www.strava.com/oauth/authorize?client_id=44814&" +
+		"redirect_uri=localhost:9096&response_type=code&approval_prompt=auto&scope=activity:read"
+	authUserID = "AuthUserID"
 )
 
 func hashPassword(pwd string) (string, error) {
@@ -56,10 +60,11 @@ func readConfig() Configuration {
 func AuthRequired(c *gin.Context) {
 	session := sessions.Default(c)
 	user := session.Get(userkey)
-	fmt.Println(user)
 	if user == nil {
 		// unauthorize will be transfer to /admin/login
-		c.Redirect(http.StatusFound, "/admin/login")
+		session.AddFlash("Unauthorized!", "is-error")
+		session.Save()
+		c.Redirect(http.StatusPermanentRedirect, "/admin/login")
 	}
 }
 
@@ -96,6 +101,7 @@ func main() {
 
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Post{})
+	db.AutoMigrate(core.Setting{})
 
 	// Serving static resources
 	router.Use(static.Serve("/static", static.LocalFile("./static", true)))
@@ -135,9 +141,7 @@ func main() {
 	adminRoute := router.Group("/admin", backendViewMiddleware)
 	adminRoute.Use(AuthRequired)
 	{
-		adminRoute.GET("/dashboard", func(c *gin.Context) {
-			ginview.HTML(c, http.StatusOK, "admin_dashboard", gin.H{})
-		})
+		adminRoute.GET("/dashboard", displayAdminDashboard)
 		adminRoute.GET("/", displayAdminIndex)
 		adminRoute.GET("/logout", adminLogout)
 	}
@@ -164,6 +168,20 @@ func main() {
 	})
 	initializeRoutes(router)
 	inititalizePostRoutes(router)
+
+	// main path: /admin/strava/* -> redirect: /admin/dashboard
+	strava.SetConfig(strava.Config{
+		ClientID:       "44814",
+		ClientSecret:   "c44a13c4308b3b834320ae5e3648d6c7855980a3",
+		PathPrefix:     "/admin",
+		PathRedirect:   "/dashboard",
+		GlobalDatabase: dbInstance,
+	})
+	strava.InitializeRoutes(router)
+	db.AutoMigrate(&strava.Link{})
+	db.AutoMigrate(&strava.Athlete{})
+
+	go strava.CreateSubscription(db)
 	router.Run(":9096")
 }
 
@@ -195,6 +213,7 @@ func adminPostLogin(c *gin.Context) {
 	if user.TryPassword(passwordFromRequest) {
 		session := sessions.Default(c)
 		session.Set(userkey, user.Username)
+		session.Set(authUserID, user.ID)
 		session.Save()
 		c.Redirect(http.StatusFound, "/admin/dashboard")
 		// c.Abort()
@@ -212,4 +231,26 @@ func adminLogout(c *gin.Context) {
 	session.Clear()
 	session.Save()
 	c.Redirect(http.StatusFound, "/admin/login")
+}
+
+func displayAdminDashboard(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := session.Get(authUserID)
+
+	db := c.MustGet(dbInstance).(*gorm.DB)
+	userInfo := models.User{}
+	stravaInfo := strava.Athlete{}
+	stravaLink := strava.Link{}
+
+	db.Where("id = ?", userID).First(&userInfo)
+	db.Where(&strava.Link{UserID: userInfo.ID}).First(&stravaLink)
+	db.Where(&strava.Athlete{Username: stravaInfo.Username}).First(&stravaInfo)
+
+	ginview.HTML(c, http.StatusOK, "admin-dashboard", gin.H{
+		"user":              userInfo,
+		"strava_link":       stravaLink,
+		"athelete":          stravaInfo,
+		"IsStravaConnected": stravaLink.ID > 0,
+		"StravaRevokeURL":   strava.ActiveConfig().GetRevokeURLFor(stravaInfo.Username),
+	})
 }
