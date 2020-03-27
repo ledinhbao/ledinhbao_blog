@@ -7,6 +7,7 @@ type Link struct {
 	gorm.Model
 	UserID       uint
 	Username     string
+	AthleteID    uint64
 	AccessToken  string `mapstructure:"access_token"`
 	RefreshToken string `mapstructure:"refresh_token"`
 	ExpiresAt    int    `mapstructure:"expires_at"`
