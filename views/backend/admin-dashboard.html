@@ -57,8 +57,8 @@
                             {{ end }}</p>
                     </div>
                     <div class="column">
-                        {{ if .IsStravaSubscribed }}<a class="button" href="{{ .StravaRevokeURL }}">Delete Subscription</a>
-                        {{ else }}<a class="button is-info" href="https://www.strava.com/oauth/authorize?client_id=44814&redirect_uri=http://localhost:9096/admin/strava&response_type=code&approval_prompt=auto&scope=activity:read">Create Subscription</a>
+                        {{ if .IsStravaSubscribed }}<a class="button" href="/admin/strava/subscription/delete/{{ .stravaSubscriptionID }}">Delete Subscription</a>
+                        {{ else }}<a class="button is-info" href="/admin/strava/subscription/create">Create Subscription</a>
                         {{ end }}
                     </div>
                 </div>

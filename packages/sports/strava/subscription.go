@@ -63,7 +63,17 @@ func sendSubscriptionCreationRequest() (int, map[string]interface{}) {
 }
 
 func stravaDeleteSubscription(c *gin.Context) {
+	subscriptionID := c.Param("subscription-id")
+	sendDeleteSubscription(subscriptionID)
+	db := c.MustGet(config.GlobalDatabase).(*gorm.DB)
+	db.Where(core.Setting{Value: subscriptionID}).Delete(&core.Setting{})
+	c.Redirect(http.StatusFound, config.getRedirectPath())
+}
 
+func stravaCreateSubscription(c *gin.Context) {
+	db := c.MustGet(config.GlobalDatabase).(*gorm.DB)
+	CreateSubscription(db)
+	c.Redirect(http.StatusFound, config.getRedirectPath())
 }
 
 // CreateSubscription kiểm tra trong bảng table config, kiểm tra SubscriptionDBKey có tồn tại hay không,

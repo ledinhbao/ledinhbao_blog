@@ -171,11 +171,12 @@ func main() {
 
 	// main path: /admin/strava/* -> redirect: /admin/dashboard
 	strava.SetConfig(strava.Config{
-		ClientID:       "44814",
-		ClientSecret:   "c44a13c4308b3b834320ae5e3648d6c7855980a3",
-		PathPrefix:     "/admin",
-		PathRedirect:   "/dashboard",
-		GlobalDatabase: dbInstance,
+		ClientID:        "44814",
+		ClientSecret:    "c44a13c4308b3b834320ae5e3648d6c7855980a3",
+		PathPrefix:      "/admin",
+		PathRedirect:    "/dashboard",
+		GlobalDatabase:  dbInstance,
+		URLCallbackHost: "http://bc7b66a4.ngrok.io",
 	})
 	strava.InitializeRoutes(router)
 	db.AutoMigrate(&strava.Link{})

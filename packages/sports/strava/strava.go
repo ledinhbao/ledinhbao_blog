@@ -31,7 +31,8 @@ func InitializeRoutes(engine *gin.Engine) {
 		stravaRoute.GET("/revoke/:username", stravaRevokeToken)
 		stravaRoute.GET("/list/:username", listActivitiesForYesterday)
 		stravaRoute.GET(config.PathSubscription, stravaValidateSubscription)
-		stravaRoute.GET(config.PathSubscription+"/delete", stravaDeleteSubscription)
+		stravaRoute.GET(config.PathSubscription+"/delete/:subscription-id", stravaDeleteSubscription)
+		stravaRoute.GET(config.PathSubscription+"/create", stravaCreateSubscription)
 	}
 }
 
