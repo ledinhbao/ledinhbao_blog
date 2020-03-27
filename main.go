@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 
@@ -34,28 +32,6 @@ const (
 	authUserID = "AuthUserID"
 )
 
-func hashPassword(pwd string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
-	return string(bytes), err
-}
-
-type Configuration struct {
-	RootUserSetup bool `json:"RootUserSetup"`
-}
-
-func readConfig() Configuration {
-	file, err := ioutil.ReadFile("config.json")
-	if err != nil {
-		panic("Cannot read config file" + err.Error())
-	}
-	data := Configuration{}
-	err = json.Unmarshal([]byte(file), &data)
-	if err != nil {
-		panic("Unmarshal config data failed: " + err.Error())
-	}
-	return data
-}
-
 // AuthRequired is a middleware to check if the user is authorized or not.
 func AuthRequired(c *gin.Context) {
 	session := sessions.Default(c)
@@ -75,7 +51,12 @@ func dbHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func RandString() string {
+func hashPassword(pwd string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func randString() string {
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, 10)
 	for i := range b {
@@ -85,13 +66,18 @@ func RandString() string {
 }
 
 func main() {
+	// CHANGE!!!! DEBUG MODE ONLY
+	const stravaCallbackHost = string("http://bc7b66a4.ngrok.io")
+	db, err := gorm.Open("sqlite3", "database.db")
+	// PRODUCTION <<<<
+
 	router := gin.Default()
 
-	cookieName := RandString()
+	cookieName := randString()
 	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))
 	// db, err := sqlx.Connect("mysql", "ledinhbao_axis:L93hxwPc8r@/ledinhbao_blog")
 	// db, err := sqlx.Connect("sqlite3", "database.db")
-	db, err := gorm.Open("sqlite3", "database.db")
+
 	if err != nil {
 		panic("Cannot connect to database." + err.Error())
 	}
@@ -176,7 +162,7 @@ func main() {
 		PathPrefix:      "/admin",
 		PathRedirect:    "/dashboard",
 		GlobalDatabase:  dbInstance,
-		URLCallbackHost: "http://bc7b66a4.ngrok.io",
+		URLCallbackHost: stravaCallbackHost,
 	})
 	strava.InitializeRoutes(router)
 	db.AutoMigrate(&strava.Link{})
