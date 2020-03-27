@@ -21,6 +21,8 @@
                         Services
                     </div>
                 </div>
+                
+                <!-- Strava Integrated for User -->
                 <div class="columns">
                     <div class="column is-1">
                         <figure class="image is-48x48">
@@ -39,6 +41,29 @@
                         {{ end }}
                     </div>
                 </div>
+                <!-- END: Strava Integrated for User -->
+
+                <!-- Strava Subscription for Application -->
+                <div class="columns">
+                    <div class="column is-1">
+                        <figure class="image is-48x48">
+                            <img src="/static/images/strava.webp" class="image is-rounded" />
+                        </figure>
+                    </div>
+                    <div class="column is-6">
+                        <P class="is-size-5">Strava Webhook Subscription</P>
+                        <p>{{ if .IsStravaSubscribed }}Subscription ID <strong>{{ .stravaSubscriptionID }}</strong>
+                            {{ else }}Unsubscribed
+                            {{ end }}</p>
+                    </div>
+                    <div class="column">
+                        {{ if .IsStravaSubscribed }}<a class="button" href="{{ .StravaRevokeURL }}">Delete Subscription</a>
+                        {{ else }}<a class="button is-info" href="https://www.strava.com/oauth/authorize?client_id=44814&redirect_uri=http://localhost:9096/admin/strava&response_type=code&approval_prompt=auto&scope=activity:read">Create Subscription</a>
+                        {{ end }}
+                    </div>
+                </div>
+                <!-- END: Strava Subscription for Application -->
+
             </div>
         </div>
     </div>

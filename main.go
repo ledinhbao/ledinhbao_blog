@@ -181,7 +181,7 @@ func main() {
 	db.AutoMigrate(&strava.Link{})
 	db.AutoMigrate(&strava.Athlete{})
 
-	go strava.CreateSubscription(db)
+	// go strava.CreateSubscription(db)
 	router.Run(":9096")
 }
 
@@ -246,11 +246,17 @@ func displayAdminDashboard(c *gin.Context) {
 	db.Where(&strava.Link{UserID: userInfo.ID}).First(&stravaLink)
 	db.Where(&strava.Athlete{Username: stravaInfo.Username}).First(&stravaInfo)
 
+	var stravaSetting core.Setting
+	db.Where(core.Setting{Key: strava.ActiveConfig().SubscriptionDBKey}).First(&stravaSetting)
+
 	ginview.HTML(c, http.StatusOK, "admin-dashboard", gin.H{
 		"user":              userInfo,
 		"strava_link":       stravaLink,
 		"athelete":          stravaInfo,
 		"IsStravaConnected": stravaLink.ID > 0,
 		"StravaRevokeURL":   strava.ActiveConfig().GetRevokeURLFor(stravaInfo.Username),
+
+		"IsStravaSubscribed":   stravaSetting.ID > 0,
+		"stravaSubscriptionID": stravaSetting.Value,
 	})
 }
