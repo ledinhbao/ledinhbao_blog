@@ -6,11 +6,34 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/ledinhbao/blog/core"
 )
+
+type StravaFault struct {
+	Error   string
+	Message string `json:"message"`
+}
+
+type StravaEventUpdate struct {
+	Title   string `json:"title"`
+	Type    string `json:"type"`
+	Private bool   `json:"private"`
+}
+
+type StravaEvent struct {
+	gorm.Model
+	AspectType     string `json:"aspect_type"`
+	ObjectID       uint64 `json:"object_id"`
+	ObjectType     string `json:"object_type"`
+	OwnerID        uint64 `json:"owner_id"`
+	SubscriptionID uint64 `json:"subscription_id"`
+	EventTime      int    `json:"event_time"`
+	Updates        StravaEventUpdate
+}
 
 func getSubscriptionToken() string {
 	return config.ClientID + "hahaha" + config.ClientSecret
@@ -113,6 +136,8 @@ func CreateSubscription(db *gorm.DB) {
 	}
 }
 
+// This function handles Strava Subscription Challenge.
+// More detail: https://developers.strava.com/docs/authentication/
 func stravaValidateSubscription(c *gin.Context) {
 	challenge := c.Query("hub.challenge")
 	queryToken := c.Query("hub.verify_token")
@@ -128,4 +153,57 @@ func stravaValidateSubscription(c *gin.Context) {
 			"challenge":      challenge,
 		})
 	}
+}
+
+func stravaEventProcessing(event StravaEvent, c *gin.Context) {
+	log.Println("Processing event: ", event)
+	if event.ObjectType == "activity" {
+		db := getDatabaseInstance(c)
+		var link Link
+		db.Where(Link{AthleteID: event.OwnerID}).First(&link)
+		log.Println("Owner ID:", event.OwnerID)
+
+		var activity Activity
+		needFetching := false
+		// If "create" event or ("update" but not stored yet)
+		if event.AspectType == "create" {
+			needFetching = true
+		} else if event.AspectType == "update" {
+			db.Where(Activity{ActivityID: event.ObjectID}).First(&activity)
+			if activity.ActivityID == 0 {
+				needFetching = true
+			}
+		}
+
+		if needFetching {
+			// Check token expiration
+			var link Link
+			db.Where(Link{AthleteID: event.OwnerID}).First(&link)
+			if time.Now().Add(10*time.Minute).Unix() > int64(link.ExpiresAt) {
+				token, err := stravaSendRefreshToken(link.RefreshToken)
+				if err == nil {
+					link.AccessToken = token.AccessToken
+					link.RefreshToken = token.RefreshToken
+					link.ExpiresAt = token.ExpiresAt
+					link.ExpiresIn = token.ExpiresIn
+					db.Save(&link)
+				}
+			}
+			activity, _ = GetActivityFromStravaAPIByID(event.ObjectID, link.AccessToken)
+		}
+		if activity.ActivityID > 0 {
+			activity.ActivityID = event.OwnerID
+			db.Save(&activity)
+		}
+	}
+}
+
+// This method handle Post Request from Strava as a callback webhook.
+func stravaSubscriptionHandle(c *gin.Context) {
+	rebody, _ := ioutil.ReadAll(c.Request.Body)
+	var event StravaEvent
+	_ = json.Unmarshal(rebody, &event)
+	go stravaEventProcessing(event, c)
+	// Must response with status 200
+	c.JSON(http.StatusOK, gin.H{})
 }
