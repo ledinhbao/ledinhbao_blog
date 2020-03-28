@@ -191,8 +191,15 @@ func stravaEventProcessing(event StravaEvent, c *gin.Context) {
 			}
 			activity, _ = GetActivityFromStravaAPIByID(event.ObjectID, link.AccessToken)
 		}
+		// TODO If an newer event has been receive, we need to discard this modification
 		if activity.ActivityID > 0 {
-			activity.ActivityID = event.OwnerID
+			activity.AthleteID = event.OwnerID
+			if event.Updates.Title != "" {
+				activity.Name = event.Updates.Title
+			}
+			if event.Updates.Type != "" {
+				activity.Type = event.Updates.Type
+			}
 			db.Save(&activity)
 		}
 	}
