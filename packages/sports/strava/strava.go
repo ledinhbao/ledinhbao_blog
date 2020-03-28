@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -108,29 +107,6 @@ func stravaExchangeToken(c *gin.Context) {
 
 func getDatabaseInstance(c *gin.Context) *gorm.DB {
 	return c.MustGet("database").(*gorm.DB)
-}
-
-func stravaRevokeToken(c *gin.Context) {
-	// TODO Valid data where username is linked with user
-	db := getDatabaseInstance(c)
-	username := c.Param("username")
-	link := Link{}
-	_ = db.Where(Link{Username: username}).First(&link)
-
-	client := &http.Client{}
-	urlValues := url.Values{}
-	urlValues.Set("access_token", link.AccessToken)
-
-	request, _ := http.NewRequest("POST", revokeURL, nil)
-	request.URL.RawQuery = urlValues.Encode()
-	response, _ := client.Do(request)
-	log.Println("Strava > send revoke token > response code", response.StatusCode)
-	// if response.StatusCode >= 200 && response.StatusCode <= 299 {
-	// Remove record from database
-	go removeStravaRecord(db, username)
-	// }
-
-	c.Redirect(http.StatusFound, config.getRedirectPath())
 }
 
 func removeStravaRecord(db *gorm.DB, username string) {

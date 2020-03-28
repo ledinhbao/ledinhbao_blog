@@ -2,7 +2,6 @@ package strava
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -26,6 +25,11 @@ type Activity struct {
 	AthleteID      uint64
 }
 
+// TableName return table's name for strava's activity records.
+func (Activity) TableName() string {
+	return "strava_activities"
+}
+
 func GetActivityFromStravaAPIByID(id uint64, accessToken string) (Activity, error) {
 	endpoint := fmt.Sprintf("%s/activities/%d", apiURL, id)
 	client := &http.Client{}
@@ -47,5 +51,5 @@ func GetActivityFromStravaAPIByID(id uint64, accessToken string) (Activity, erro
 	var fault StravaFault
 	json.Unmarshal(rebody, &fault)
 	log.Println("Receive error", fault)
-	return Activity{}, errors.New(fault.Message)
+	return Activity{}, &TokenError{"Expired Token"}
 }
