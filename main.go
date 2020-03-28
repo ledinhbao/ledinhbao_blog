@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"html/template"
 	"math/rand"
 	"net/http"
 
@@ -65,6 +67,18 @@ func randString() string {
 	return string(b)
 }
 
+func formatInKilometer(raw float64) string {
+	return fmt.Sprintf("%.2f", raw/1000)
+}
+
+func formatStravaTime(t uint) string {
+	sec := (t - uint(t/60)*60)
+	min := (t - sec) / 60
+	hour := uint(min / 60)
+	min -= hour * 60
+	return fmt.Sprintf("%d:%02d:%02d", hour, min, sec)
+}
+
 func main() {
 	// CHANGE!!!! DEBUG MODE ONLY
 	const stravaCallbackHost = string("http://bc7b66a4.ngrok.io")
@@ -91,7 +105,6 @@ func main() {
 
 	// Serving static resources
 	router.Use(static.Serve("/static", static.LocalFile("./static", true)))
-
 	// router.LoadHTMLGlob("templates/*")
 
 	router.HTMLRender = ginview.New(goview.Config{
@@ -116,6 +129,10 @@ func main() {
 		Master:       "layout/master",
 		Partials:     []string{},
 		DisableCache: true,
+		Funcs: template.FuncMap{
+			"formatInKilometer": formatInKilometer,
+			"formatStravaTime":  formatStravaTime,
+		},
 	})
 
 	adminGeneralRoute := router.Group("/admin", backendViewMiddleware)
@@ -238,6 +255,9 @@ func displayAdminDashboard(c *gin.Context) {
 	var stravaSetting core.Setting
 	db.Where(core.Setting{Key: strava.ActiveConfig().SubscriptionDBKey}).First(&stravaSetting)
 
+	var lastRun strava.Activity
+	db.Where(strava.Activity{AthleteID: stravaInfo.AthleteID, Type: "Run"}).First(&lastRun)
+
 	ginview.HTML(c, http.StatusOK, "admin-dashboard", gin.H{
 		"user":              userInfo,
 		"strava_link":       stravaLink,
@@ -247,5 +267,8 @@ func displayAdminDashboard(c *gin.Context) {
 
 		"IsStravaSubscribed":   stravaSetting.ID > 0,
 		"stravaSubscriptionID": stravaSetting.Value,
+
+		"hasLastRun": lastRun.ID > 0,
+		"lastRun":    lastRun,
 	})
 }

@@ -4,6 +4,24 @@
 
 <!-- .section -->
 <section class="section">
+    <div class="container">
+        <div class="tile is-ancestor">
+            <div class="tile is-parent">
+                {{ if .hasLastRun }}
+                <div class="tile is-child notification is-info is-3">
+                    <p class="title">{{ .lastRun.Name }}</p>
+                    <p>Distance: <strong>{{ .lastRun.Distance | formatInKilometer }}</strong> km</p>
+                    <p>Moving Time: <strong>{{ .lastRun.MovingTime | formatStravaTime }}</strong></p>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+    </div>
+</section>
+<!-- END .section -->
+
+<!-- .section -->
+<section class="section">
 
     <div class="container">
         <div class="columns">
@@ -31,7 +49,7 @@
                     </div>
                     <div class="column is-6">
                         <P class="is-size-5">Strava</P>
-                        <p>{{ if .IsStravaConnected }}Linked to <strong>{{ .athelete.Username }}</strong>
+                        <p>{{ if .IsStravaConnected }}Linked to <strong>{{ .athelete.Username }}</strong> ({{ .athelete.AthleteID }})
                             {{ else }}Unlink
                             {{ end }}</p>
                     </div>
