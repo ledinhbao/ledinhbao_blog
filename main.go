@@ -167,6 +167,8 @@ func main() {
 	strava.InitializeRoutes(router)
 	db.AutoMigrate(&strava.Link{})
 	db.AutoMigrate(&strava.Athlete{})
+	db.AutoMigrate(&strava.Activity{})
+	db.AutoMigrate(&strava.Athlete{})
 
 	// go strava.CreateSubscription(db)
 	router.Run(":9096")
