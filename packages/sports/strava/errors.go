@@ -5,7 +5,6 @@ type TokenError struct {
 }
 
 type stravaFault struct {
-	Error   string
 	Message string `json:"message"`
 }
 

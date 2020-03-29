@@ -48,7 +48,7 @@ func GetActivityFromStravaAPIByID(id uint64, accessToken string) (Activity, erro
 		activity.ActivityID = id
 		return activity, nil
 	}
-	var fault StravaFault
+	var fault stravaFault
 	json.Unmarshal(rebody, &fault)
 	log.Println("Receive error", fault)
 	return Activity{}, &TokenError{"Expired Token"}

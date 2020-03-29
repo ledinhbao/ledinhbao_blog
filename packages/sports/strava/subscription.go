@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -151,12 +150,11 @@ func stravaValidateSubscription(c *gin.Context) {
 }
 
 func stravaEventProcessing(event StravaEvent, c *gin.Context) {
-	log.Println("Processing event: ", event)
+	log.Println(fmt.Sprintf("Subscription Event Process: start, %+v", event))
 	if event.ObjectType == "activity" {
 		db := getDatabaseInstance(c)
 		var link Link
 		db.Where(Link{AthleteID: event.OwnerID}).First(&link)
-		log.Println("Owner ID:", event.OwnerID)
 
 		var activity Activity
 		needFetching := false
@@ -172,19 +170,12 @@ func stravaEventProcessing(event StravaEvent, c *gin.Context) {
 
 		if needFetching {
 			// Check token expiration
-			var link Link
-			db.Where(Link{AthleteID: event.OwnerID}).First(&link)
-			if time.Now().Add(10*time.Minute).Unix() > int64(link.ExpiresAt) {
-				token, err := stravaSendRefreshToken(link.RefreshToken)
-				if err == nil {
-					link.AccessToken = token.AccessToken
-					link.RefreshToken = token.RefreshToken
-					link.ExpiresAt = token.ExpiresAt
-					link.ExpiresIn = token.ExpiresIn
-					db.Save(&link)
-				}
+			token, err := stravaGetAccessTokenForAthleteID(event.OwnerID, db)
+			if err == nil {
+				activity, _ = GetActivityFromStravaAPIByID(event.ObjectID, token.AccessToken)
+			} else {
+				log.Println("Subscription Event Process: error, " + err.Error())
 			}
-			activity, _ = GetActivityFromStravaAPIByID(event.ObjectID, link.AccessToken)
 		}
 		// TODO If an newer event has been receive, we need to discard this modification
 		if activity.ActivityID > 0 {
@@ -196,6 +187,7 @@ func stravaEventProcessing(event StravaEvent, c *gin.Context) {
 				activity.Type = event.Updates.Type
 			}
 			db.Save(&activity)
+			log.Println("Subscription Event Process: succeed > Activity Name: " + activity.Name)
 		}
 	}
 }
