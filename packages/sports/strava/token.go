@@ -3,13 +3,17 @@ package strava
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
+// StravaToken represents a Token object with Strava Server
 type StravaToken struct {
 	TokenType    string `json:"token_type"`
 	AccessToken  string `json:"access_token"`
@@ -57,4 +61,43 @@ func stravaRevokeToken(c *gin.Context) {
 	removeStravaRecord(db, username)
 
 	c.Redirect(http.StatusFound, config.getRedirectPath())
+}
+
+func stravaGetAccessTokenForUserID(userID uint, db *gorm.DB) (StravaToken, error) {
+	var link Link
+	db.Where(Link{UserID: userID}).First(&link)
+	if link.ID == 0 {
+		return StravaToken{}, fmt.Errorf("Could not find Strava Link, userID %d didn't link Strava to their account", userID)
+	}
+	return stravaGetAccessTokenForLink(link, db)
+}
+
+func stravaGetAccessTokenForAthleteID(athleteID uint64, db *gorm.DB) (StravaToken, error) {
+	var link Link
+	db.Where(Link{AthleteID: athleteID}).First(&link)
+	if link.ID == 0 {
+		return StravaToken{}, fmt.Errorf("Cound not find Strava Link for Athlete ID %d", athleteID)
+	}
+	return stravaGetAccessTokenForLink(link, db)
+}
+
+func stravaGetAccessTokenForLink(link Link, db *gorm.DB) (StravaToken, error) {
+	if link.ID == 0 {
+		return StravaToken{}, errors.New("Cannot get access token for empty Link Object")
+	}
+	if time.Now().Add(10*time.Minute).Unix() > int64(link.ExpiresAt) {
+		token, err := stravaSendRefreshToken(link.RefreshToken)
+		if err == nil {
+			link.AccessToken = token.AccessToken
+			link.RefreshToken = token.RefreshToken
+			link.ExpiresAt = token.ExpiresAt
+			link.ExpiresIn = token.ExpiresIn
+			db.Save(&link)
+		}
+		return token, nil
+	}
+	return StravaToken{
+		AccessToken:  link.AccessToken,
+		RefreshToken: link.RefreshToken,
+	}, nil
 }
