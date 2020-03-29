@@ -8,7 +8,7 @@
         <div class="tile is-ancestor">
             <div class="tile is-parent">
                 {{ if .hasLastRun }}
-                <div class="tile is-child notification is-info is-3">
+                <div class="tile is-child notification is-light is-3">
                     <p class="title">{{ .lastRun.Name }}</p>
                     <p>Distance: <strong>{{ .lastRun.Distance | formatInKilometer }}</strong> km</p>
                     <p>Moving Time: <strong>{{ .lastRun.MovingTime | formatStravaTime }}</strong></p>
