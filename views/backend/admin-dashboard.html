@@ -85,7 +85,54 @@
             </div>
         </div>
     </div>
-    <a href="/admin/strava/list/{{ .strava_link.Username}}">List Activities</a>
+
+    <!-- STRAVA CLUBS -->
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3">
+                <aside class="menu">
+                    <p class="menu-label">
+                        STRAVA CLUB(s)
+                    </p>
+                </aside>
+            </div>
+
+            {{ if .hasClubList }}
+            <!-- CLUB LIST -->
+            <div class="column">
+                <div class="columns">
+                    <div class="column is-size-3">
+                        STRAVA CLUB(s)
+                    </div>
+                </div>
+                
+                <!-- Strava Integrated for User -->
+                {{ range .clubList}}
+                <div class="columns">
+                    <div class="column is-1">
+                        <figure class="image is-48x48">
+                            <img src="/static/images/strava.webp" class="image is-rounded" />
+                        </figure>
+                    </div>
+                    <div class="column is-6">
+                        <P class="is-size-5">{{ .Name }}</P>
+                        <p></p>
+                    </div>
+                    <div class="column">
+                        
+                    </div>
+                </div>
+                <!-- END: Strava Integrated for User -->
+                {{ end }}
+
+            </div>
+            <!-- END: CLUB LIST -->
+            {{ end }}
+
+        </div>
+    </div>
+    <!-- END: STRAVA CLUB -->
+    
 
 </section>
 <!-- END .section -->

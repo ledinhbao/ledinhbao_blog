@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/contrib/static"
@@ -172,7 +174,7 @@ func main() {
 	initializeRoutes(router)
 	inititalizePostRoutes(router)
 
-	// main path: /admin/strava/* -> redirect: /admin/dashboard
+	// main path: /admin/strava/* -> redirect: /admin/strava/dashboard
 	strava.SetConfig(strava.Config{
 		ClientID:        "44814",
 		ClientSecret:    "c44a13c4308b3b834320ae5e3648d6c7855980a3",
@@ -182,10 +184,18 @@ func main() {
 		URLCallbackHost: stravaCallbackHost,
 	})
 	strava.InitializeRoutes(router)
+
+	stravaClubRouter := router.Group("/admin/strava/clubs", backendViewMiddleware)
+	{
+		stravaClubRouter.GET("/add", stravaAddClub)
+		stravaClubRouter.POST("/connect", stravaConnectClub)
+	}
+
 	db.AutoMigrate(&strava.Link{})
 	db.AutoMigrate(&strava.Athlete{})
 	db.AutoMigrate(&strava.Activity{})
 	db.AutoMigrate(&strava.Athlete{})
+	db.AutoMigrate(&strava.StravaClub{})
 
 	// go strava.CreateSubscription(db)
 	router.Run(":9096")
@@ -258,6 +268,9 @@ func displayAdminDashboard(c *gin.Context) {
 	var lastRun strava.Activity
 	db.Where(strava.Activity{AthleteID: stravaInfo.AthleteID, Type: "Run"}).First(&lastRun)
 
+	var clubList []strava.StravaClub
+	db.Find(&clubList)
+
 	ginview.HTML(c, http.StatusOK, "admin-dashboard", gin.H{
 		"user":              userInfo,
 		"strava_link":       stravaLink,
@@ -270,5 +283,43 @@ func displayAdminDashboard(c *gin.Context) {
 
 		"hasLastRun": lastRun.ID > 0,
 		"lastRun":    lastRun,
+
+		"hasClubList": len(clubList) > 0,
+		"clubList":    clubList,
 	})
+}
+
+func stravaAddClub(c *gin.Context) {
+	db := c.MustGet(dbInstance).(*gorm.DB)
+	session := sessions.Default(c)
+	var userInfo models.User
+	db.Where("id = ?", session.Get(authUserID)).First(&userInfo)
+	ginview.HTML(c, http.StatusOK, "admin-strava-add-club", gin.H{
+		"user": userInfo,
+	})
+}
+
+func stravaConnectClub(c *gin.Context) {
+	db := c.MustGet(dbInstance).(*gorm.DB)
+	session := sessions.Default(c)
+	userID := session.Get(authUserID).(uint)
+	clubID := c.PostForm("club_id")
+
+	var club strava.StravaClub
+	db.Where("club_id = ?", clubID).First(&club)
+	if club.ID > 0 {
+		// There is a group with the same id
+		session.AddFlash("There is a club with ID: "+clubID+" had been added.", "strava-clubs-add-error")
+		session.Save()
+	} else {
+		// Save strava club with id, and state of processing is 1 (Processing data from Strava)
+		clubIDUInt64, _ := strconv.ParseUint(clubID, 10, 32)
+		club.ClubID = uint(clubIDUInt64)
+		club.ProcessingState = 1
+		db.Create(&club)
+		log.Println(fmt.Sprintf("Club ID %d is currently processing data.", club.ClubID))
+		go strava.StravaFetchClub(club, userID, db)
+	}
+	c.Redirect(http.StatusFound, "/admin/dashboard")
+
 }
