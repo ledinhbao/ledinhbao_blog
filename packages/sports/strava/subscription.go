@@ -13,11 +13,6 @@ import (
 	"github.com/ledinhbao/blog/core"
 )
 
-type StravaFault struct {
-	Error   string
-	Message string `json:"message"`
-}
-
 type StravaEventUpdate struct {
 	Title   string `json:"title"`
 	Type    string `json:"type"`
