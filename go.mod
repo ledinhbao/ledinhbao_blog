@@ -13,5 +13,6 @@ require (
 	github.com/imdario/mergo v0.3.9
 	github.com/jinzhu/gorm v1.9.12
 	github.com/mitchellh/mapstructure v1.2.2
+	github.com/sirupsen/logrus v1.5.0 // indirect
 	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df
 )
