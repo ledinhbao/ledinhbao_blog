@@ -266,7 +266,10 @@ func displayAdminDashboard(c *gin.Context) {
 	db.Where(core.Setting{Key: strava.ActiveConfig().SubscriptionDBKey}).First(&stravaSetting)
 
 	var lastRun strava.Activity
-	db.Where(strava.Activity{AthleteID: stravaInfo.AthleteID, Type: "Run"}).First(&lastRun)
+	db.Where(strava.Activity{
+		AthleteID: stravaInfo.AthleteID,
+		Type:      "Run",
+	}).Order("start_date desc").First(&lastRun)
 
 	var clubList []strava.StravaClub
 	db.Find(&clubList)
