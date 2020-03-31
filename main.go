@@ -189,6 +189,7 @@ func main() {
 	{
 		stravaClubRouter.GET("/add", stravaAddClub)
 		stravaClubRouter.POST("/connect", stravaConnectClub)
+		stravaClubRouter.GET("/remove/:club-id", stravaRemoveClub)
 	}
 
 	db.AutoMigrate(&strava.Link{})
@@ -325,4 +326,18 @@ func stravaConnectClub(c *gin.Context) {
 	}
 	c.Redirect(http.StatusFound, "/admin/dashboard")
 
+}
+
+func stravaRemoveClub(c *gin.Context) {
+	db := c.MustGet(dbInstance).(*gorm.DB)
+	clubID, err := strconv.ParseUint(c.Query("club-id"), 10, 64)
+	if err != nil {
+		session := sessions.Default(c)
+		session.AddFlash("Missing club-id for delete.", "is-error")
+		session.Save()
+
+	} else {
+		db.Delete(strava.StravaClub{ClubID: uint(clubID)}).Delete(&strava.StravaClub{})
+	}
+	c.Redirect(http.StatusNotFound, "/admin/dashboard")
 }
