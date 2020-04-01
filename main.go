@@ -123,7 +123,7 @@ func main() {
 		})
 	})
 
-	router.GET("/", displayPosts)
+	router.GET("/", displayHomePage)
 
 	backendViewMiddleware := ginview.NewMiddleware(goview.Config{
 		Root:         "views/backend",
@@ -340,4 +340,10 @@ func stravaRemoveClub(c *gin.Context) {
 		db.Delete(strava.StravaClub{ClubID: uint(clubID)}).Delete(&strava.StravaClub{})
 	}
 	c.Redirect(http.StatusNotFound, "/admin/dashboard")
+}
+
+func displayHomePage(c *gin.Context) {
+	ginview.HTML(c, http.StatusOK, "homepage", gin.H{
+		"pageTitle": "Tan Phu Challenge",
+	})
 }
