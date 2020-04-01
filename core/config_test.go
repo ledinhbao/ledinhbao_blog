@@ -7,6 +7,41 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const configString = `
+{
+	"application": {
+		"mode": "development",
+		"admin-prefix": "/admin"
+	},
+	"database": {
+		"development": {
+			"username": "",
+			"password": "",
+			"host": "/database.db"
+		},
+		"production": {
+			"username": "",
+			"password": "",
+			"host": "localhost"
+		}
+	},
+	"strava": {
+		"webhook-callback": "http://bc7b66a4.ngrok.io"
+	},
+	"single": "field"
+}`
+const subconfigString = `{
+	"username": "",
+	"password": "",
+	"host": "localhost"
+}`
+
+func prepareTesting(str string) (Config, error) {
+	var config Config
+	err := json.Unmarshal([]byte(str), &config)
+	return config, err
+}
+
 func TestStringValueForKey(t *testing.T) {
 	sampleConfigStr := `{
 		"application": {
@@ -27,7 +62,8 @@ func TestStringValueForKey(t *testing.T) {
 		},
 		"strava": {
 			"webhook-callback": "http://bc7b66a4.ngrok.io"
-		}
+		},
+		"single": "field"
 	}`
 	var config Config
 	err := json.Unmarshal([]byte(sampleConfigStr), &config)
@@ -46,6 +82,10 @@ func TestStringValueForKey(t *testing.T) {
 
 	actual, err = config.StringValueForKey("strava-non-exist-key")
 	assert.NotNil(t, err)
+
+	actual, err = config.StringValueForKey("single")
+	assert.Nil(t, err)
+	assert.Equal(t, "field", actual, "Expected \"field\" but receive "+actual)
 }
 
 func TestReadFile(t *testing.T) {
@@ -79,4 +119,15 @@ func TestReadFile(t *testing.T) {
 	err = json.Unmarshal([]byte(sampleConfig), &expectedConfig)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedConfig, config)
+}
+
+func TestConfigValueForKey(t *testing.T) {
+	config, err := prepareTesting(configString)
+	assert.Nil(t, err)
+	subConfig, err := prepareTesting(subconfigString)
+	assert.Nil(t, err)
+
+	actualSubConfig, err := config.ConfigValueForKey("database.production")
+	assert.Nil(t, err)
+	assert.Equal(t, subConfig, actualSubConfig)
 }

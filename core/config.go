@@ -53,10 +53,24 @@ func (c Config) IntValueForKey(key string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if strValue, ok := value.(int); ok {
-		return strValue, nil
+	if res, ok := value.(int); ok {
+		return res, nil
 	}
 	return 0, errors.New("Value for key is not a int")
+}
+
+// ConfigValueForKey takes key as string, dot-separated, return Config object,
+// or error if value for intended key cannot form a Config object.
+func (c Config) ConfigValueForKey(key string) (Config, error) {
+	value, err := c.ValueForKey(key)
+	if err != nil {
+		return Config{}, err
+	}
+	if _, ok := value.(map[string]interface{}); ok {
+		var res Config = value.(map[string]interface{})
+		return res, nil
+	}
+	return Config{}, errors.New("Value for key " + key + "is single field value")
 }
 
 // NewConfigFromJSONFile read from *.json and return Config object.

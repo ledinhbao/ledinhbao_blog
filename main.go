@@ -82,18 +82,28 @@ func formatStravaTime(t uint) string {
 }
 
 func main() {
-	// CHANGE!!!! DEBUG MODE ONLY
-	const stravaCallbackHost = string("http://bc7b66a4.ngrok.io")
-	db, err := gorm.Open("sqlite3", "database.db")
-	// PRODUCTION <<<<
+	var err error
+
+	// Load Config
+	var config core.Config
+	config, err = core.NewConfigFromJSONFile("config.json")
+	if err != nil {
+		log.Panicf("Load config error: %s", err.Error())
+	}
+
+	appMode, err := config.StringValueForKey("application.mode")
+	if err == nil && appMode == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	var stravaCallbackHost = string("http://bc7b66a4.ngrok.io")
+	stravaCallbackHost, _ = config.StringValueForKey("strava.webhook-callback")
 
 	router := gin.Default()
 
 	cookieName := randString()
 	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))
-	// db, err := sqlx.Connect("mysql", "ledinhbao_axis:L93hxwPc8r@/ledinhbao_blog")
-	// db, err := sqlx.Connect("sqlite3", "database.db")
 
+	db, err := gorm.Open("sqlite3", "database.db")
 	if err != nil {
 		panic("Cannot connect to database." + err.Error())
 	}
