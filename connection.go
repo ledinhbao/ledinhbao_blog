@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/jinzhu/gorm"
 	"github.com/ledinhbao/blog/core"
+
+	log "github.com/sirupsen/logrus"
 
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -25,12 +25,16 @@ func loadDatabase(dbconfig core.Config) (*gorm.DB, error) {
 	port, _ := dbconfig.StringValueForKey("port")
 
 	conn, err = core.NewDatabaseConnection(dialect, databaseName, username, password, host, port)
-	if err == nil {
-		return nil, fmt.Errorf("Unsupport dialect: %s", dialect)
+	if err != nil {
+		return nil, err
 	}
 	db, err := gorm.Open(dialect, conn.ConnectionString())
 	if err != nil {
 		return nil, err
 	}
+	log.WithFields(log.Fields{
+		"dialect": dialect,
+		"args":    []string{databaseName, username, password, host, port},
+	}).Info("Database loaded successfully")
 	return db, nil
 }

@@ -43,7 +43,7 @@ func (conn postgresConnection) ConnectionString() string {
 }
 
 // NewDatabaseConnection create database connection object, based on dialect.
-// 	- "sqlite"   requires 1 arg : databaseName
+// 	- "sqlite3"  requires 1 arg : databaseName
 // 	- "mysql"    requires 3 args: databaseName, username, password
 // 	- "postgres" requires 5 args: databaseName, username, password, host, port
 func NewDatabaseConnection(dialect string, args ...string) (DatabaseConnection, error) {
