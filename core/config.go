@@ -8,8 +8,17 @@ import (
 	"strings"
 )
 
+// ConfigIndexError presents key does not exist.
+type ConfigIndexError struct {
+	Key string
+}
+
 // Config is struct presentation for config.json file.
 type Config map[string]interface{}
+
+func (err ConfigIndexError) Error() string {
+	return fmt.Sprintf("Cound not find values for keys %s", err.Key)
+}
 
 // ValueForKey takes key as string, dot-separated, return interface{}
 func (c Config) ValueForKey(keyPath string) (interface{}, error) {
@@ -23,14 +32,13 @@ func (c Config) ValueForKey(keyPath string) (interface{}, error) {
 			if _, ok = temp.(map[string]interface{}); ok {
 				value = temp.(map[string]interface{})
 			} else {
-				return nil, errors.New("Config-key doesn't exist")
+				return nil, ConfigIndexError{Key: key}
 			}
 		} else {
-			return nil, fmt.Errorf("Config key %s doesn't exist", key)
+			return nil, ConfigIndexError{Key: key}
 		}
 	}
 	return nil, errors.New("Undefined error")
-
 }
 
 // StringValueForKey takes key as string, dot-separated, return string,
@@ -78,7 +86,6 @@ func NewConfigFromJSONFile(path string) (Config, error) {
 	ifErr := func(err error) (Config, error) {
 		return Config{}, err
 	}
-
 	body, err := ioutil.ReadFile(path)
 	if err != nil {
 		return ifErr(err)

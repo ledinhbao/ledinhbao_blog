@@ -1,20 +1,17 @@
 {
     "application": {
-        "mode": "development",
+        "mode": "debug",
         "admin-prefix": "/admin"
     },
     "database": {
-        "development": {
-            "driver": "sqlite3",
-            "username": "",
-            "password": "",
-            "host": "/database.db"
+        "debug": {
+            "dialect": "sqlite3",
+            "database": "database.db"
         },
-        "production": {
+        "release": {
             "driver": "mysql",
             "username": "ledinhbao_axis",
-            "password": "L93hxwPc8r",
-            "host": "localhost"
+            "password": "L93hxwPc8r"
         }
     },
     "strava": {

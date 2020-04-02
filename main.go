@@ -92,7 +92,7 @@ func main() {
 	}
 
 	appMode, err := config.StringValueForKey("application.mode")
-	if err == nil && appMode == "production" {
+	if err == nil && appMode == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	var stravaCallbackHost = string("http://bc7b66a4.ngrok.io")
@@ -103,10 +103,16 @@ func main() {
 	cookieName := randString()
 	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))
 
-	db, err := gorm.Open("sqlite3", "database.db")
+	dbConfig, err := config.ConfigValueForKey("database." + appMode)
+	db, err := loadDatabase(dbConfig)
 	if err != nil {
-		panic("Cannot connect to database." + err.Error())
+		panic(fmt.Sprintf("Failed to load database information", err.Error()))
 	}
+
+	// db, err := gorm.Open("sqlite3", "database.db")
+	// if err != nil {
+	// 	panic("Cannot connect to database." + err.Error())
+	// }
 	defer db.Close()
 	// Set database instance for global use
 	router.Use(dbHandler(db))
