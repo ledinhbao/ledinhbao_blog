@@ -106,7 +106,7 @@ func main() {
 	dbConfig, err := config.ConfigValueForKey("database." + appMode)
 	db, err := loadDatabase(dbConfig)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to load database information", err.Error()))
+		panic(fmt.Sprintf("Failed to load database information: %s", err.Error()))
 	}
 
 	// db, err := gorm.Open("sqlite3", "database.db")
