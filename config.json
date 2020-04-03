@@ -15,6 +15,15 @@
         }
     },
     "strava": {
-        "webhook-callback": "http://bc7b66a4.ngrok.io"
+        "debug": {
+            "webhook-callback": "http://bc7b66a4.ngrok.io",
+            "client-id": "44814",
+            "client-secret": "c44a13c4308b3b834320ae5e3648d6c7855980a3"
+        },
+        "release": {
+            "webhook-callback": "http://blog.ledinhbao.com",
+            "client-id": "44814",
+            "client-secret": "c44a13c4308b3b834320ae5e3648d6c7855980a3"
+        }
     }
 }

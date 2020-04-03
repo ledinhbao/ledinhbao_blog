@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -13,6 +14,12 @@ func initializeRoutes(router *gin.Engine) {
 	router.GET("/logout", logout)
 	router.GET("/login", showLoginPage)
 	router.POST("/login", login)
+}
+
+func displayHomePage(c *gin.Context) {
+	ginview.HTML(c, http.StatusOK, "homepage", gin.H{
+		"pageTitle": "Tan Phu Challenge",
+	})
 }
 
 func showLoginPage(c *gin.Context) {
