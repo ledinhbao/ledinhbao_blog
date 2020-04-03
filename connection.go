@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/jinzhu/gorm"
 	"github.com/ledinhbao/blog/core"
+	"go.uber.org/zap"
 
-	log "github.com/sirupsen/logrus"
+	// log "github.com/sirupsen/logrus"
 
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -32,9 +35,9 @@ func loadDatabase(dbconfig core.Config) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.WithFields(log.Fields{
-		"dialect": dialect,
-		"args":    []string{databaseName, username, password, host, port},
-	}).Info("Database loaded successfully")
+	fmt.Println(">>>>> HERE >>>>", log)
+	log.Info("database created",
+		zap.String("dialect", dialect),
+	)
 	return db, nil
 }

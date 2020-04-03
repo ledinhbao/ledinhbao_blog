@@ -9,11 +9,14 @@ import (
 
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
+
+	// log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/ledinhbao/blog/core"
@@ -79,24 +82,37 @@ func formatStravaTime(t uint) string {
 	return fmt.Sprintf("%d:%02d:%02d", hour, min, sec)
 }
 
+var log *zap.Logger
+
 func main() {
 	var err error
+	router := gin.Default()
 
+	// Setup logger using uber-go/zap
+	zapCfg := zap.NewDevelopmentConfig()
+	zapCfg.OutputPaths = []string{"logs/blog.log"}
+	log, err = zapCfg.Build()
+	defer log.Sync()
+	if err != nil {
+		panic("Failed to init log module" + err.Error())
+	}
+	// router.Use(ginzap.Ginzap(log, time.RFC3339, true))
+	router.Use(ginzap.RecoveryWithZap(log, true))
 	// Load Config
 	var config core.Config
 	config, err = core.NewConfigFromJSONFile("config.json")
 	if err != nil {
-		log.Panicf("Load config error: %s", err.Error())
+		log.Panic("Load config error: %s", zap.String("error", err.Error()))
 	}
 
 	appMode, err := config.StringValueForKey("application.mode")
 	if err == nil && appMode == "release" {
+		// Log Info level in release mode
+		zapCfg.Level.SetLevel(zap.InfoLevel)
 		gin.SetMode(gin.ReleaseMode)
 	}
 	var stravaCallbackHost = string("http://bc7b66a4.ngrok.io")
 	stravaCallbackHost, _ = config.StringValueForKey("strava.webhook-callback")
-
-	router := gin.Default()
 
 	cookieName := randString()
 	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))
@@ -106,11 +122,6 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("Failed to load database information: %s", err.Error()))
 	}
-
-	// db, err := gorm.Open("sqlite3", "database.db")
-	// if err != nil {
-	// 	panic("Cannot connect to database." + err.Error())
-	// }
 	defer db.Close()
 	// Set database instance for global use
 	router.Use(dbHandler(db))
@@ -335,7 +346,6 @@ func stravaConnectClub(c *gin.Context) {
 		club.ClubID = uint(clubIDUInt64)
 		club.ProcessingState = 1
 		db.Create(&club)
-		log.Println(fmt.Sprintf("Club ID %d is currently processing data.", club.ClubID))
 		go strava.StravaFetchClub(club, userID, db)
 	}
 	c.Redirect(http.StatusFound, "/admin/dashboard")
