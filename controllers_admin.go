@@ -117,7 +117,7 @@ func displayAdminDashboard(c *gin.Context) {
 	db.Find(&clubList)
 
 	url := location.Get(c)
-	stravaCallbackURL := fmt.Sprintf("%s://%s/admin/strava", url.Scheme, url.Host)
+	stravaCallbackURL := fmt.Sprintf("%s://%s/admin/strava", url.Scheme, c.Request.Host)
 
 	ginview.HTML(c, http.StatusOK, "admin-dashboard", gin.H{
 		"user":              userInfo,
