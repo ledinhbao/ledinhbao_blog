@@ -1,6 +1,6 @@
 {
     "application": {
-        "mode": "debug",
+        "mode": "release",
         "admin-prefix": "/admin"
     },
     "database": {
@@ -9,7 +9,7 @@
             "database": "database.db"
         },
         "release": {
-            "driver": "mysql",
+            "dialect": "mysql",
             "username": "ledinhbao_axis",
             "password": "L93hxwPc8r"
         }

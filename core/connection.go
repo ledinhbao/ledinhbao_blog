@@ -42,6 +42,10 @@ func (conn postgresConnection) ConnectionString() string {
 	)
 }
 
+func (err DatabaseConnectionError) Error() string {
+	return err.Message
+}
+
 // NewDatabaseConnection create database connection object, based on dialect.
 // 	- "sqlite3"  requires 1 arg : databaseName
 // 	- "mysql"    requires 3 args: databaseName, username, password
@@ -73,9 +77,8 @@ func NewDatabaseConnection(dialect string, args ...string) (DatabaseConnection, 
 			host: args[3], port: args[4],
 		}, nil
 	}
-	return nil, errors.New("Unsupported dialect")
-}
-
-func (err DatabaseConnectionError) Error() string {
-	return err.Message
+	if dialect == "" {
+		return nil, errors.New("NewDatabaseConnection failed: empty dialect")
+	}
+	return nil, fmt.Errorf("NewDatabaseConnection failed: unsupported dialect %s", dialect)
 }

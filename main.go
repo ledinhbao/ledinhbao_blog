@@ -28,30 +28,30 @@ const (
 var log *zap.Logger
 var logCfg zap.Config
 
+// Application required, panic if one of these failed to achieve:
+// 	- Config object is loaded.
+// 	- Logger is successully initialized.
+//	- An connection to database.
 func main() {
 	var err error
-	router := gin.Default()
-
-	initLogger()
-	// router.Use(ginzap.Ginzap(log, time.RFC3339, true))
-	router.Use(ginzap.RecoveryWithZap(log, true))
 
 	// Load Configuration file: config.json
 	var config core.Config
 	config, err = core.NewConfigFromJSONFile("config.json")
 	if err != nil {
-		log.Panic("Load config error: %s", zap.String("error", err.Error()))
+		panic("Unabled to load Config object: " + err.Error())
 	}
 
+	// Load logger
+	initLogger()
+
+	// Setup environment
 	appMode, err := config.StringValueForKey("application.mode")
 	if err == nil && appMode == "release" {
 		// Log Info level in release mode
 		logCfg.Level.SetLevel(zap.InfoLevel)
 		gin.SetMode(gin.ReleaseMode)
 	}
-
-	cookieName := randString()
-	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))
 
 	// LOAD database
 	dbConfig, err := config.ConfigValueForKey("database." + appMode)
@@ -60,9 +60,16 @@ func main() {
 		panic(fmt.Sprintf("Failed to load database information: %s", err.Error()))
 	}
 	defer db.Close()
-
 	// Model Migration
 	modelMigration(db)
+
+	router := gin.New()
+
+	// router.Use(ginzap.Ginzap(log, time.RFC3339, true))
+	router.Use(ginzap.RecoveryWithZap(log, true))
+
+	cookieName := randString()
+	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))
 
 	// Set database instance for global use
 	router.Use(dbHandler(db))
@@ -110,7 +117,7 @@ func initLogger() {
 	var err error
 	// Setup logger using uber-go/zap
 	logCfg = zap.NewDevelopmentConfig()
-	logCfg.OutputPaths = []string{"logs/blog.log"}
+	// logCfg.OutputPaths = []string{"logs/blog.log"}
 	log, err = logCfg.Build()
 	defer log.Sync()
 	if err != nil {

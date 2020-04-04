@@ -17,9 +17,11 @@ import (
 )
 
 func modelMigration(db *gorm.DB) {
+	db.AutoMigrate(core.Setting{})
+
+	// Model migration
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Post{})
-	db.AutoMigrate(core.Setting{})
 
 	// Strava Module
 	db.AutoMigrate(&strava.Link{})
