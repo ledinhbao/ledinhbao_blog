@@ -32,7 +32,7 @@ func (conn sqlite3Connection) ConnectionString() string {
 	return conn.filepath
 }
 func (conn mysqlConnection) ConnectionString() string {
-	return fmt.Sprintf("%s:%s@/%s", conn.username, conn.password, conn.databaseName)
+	return fmt.Sprintf("%s:%s@/%s?parseTime=true", conn.username, conn.password, conn.databaseName)
 }
 func (conn postgresConnection) ConnectionString() string {
 	return fmt.Sprintf(
