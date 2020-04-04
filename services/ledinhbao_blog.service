@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
+WorkingDir=
 ExecStart=
 Restart=on-abort
 
