@@ -1,6 +1,6 @@
 {
     "application": {
-        "mode": "release",
+        "mode":"debug", 
         "admin-prefix": "/admin"
     },
     "database": {
@@ -11,7 +11,8 @@
         "release": {
             "dialect": "mysql",
             "username": "ledinhbao_axis",
-            "password": "L93hxwPc8r"
+            "password": "L93hxwPc8r",
+            "database":"ledinhbao_blog"
         }
     },
     "strava": {

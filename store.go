@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/jinzhu/gorm"
 	"github.com/ledinhbao/blog/core"
 	"github.com/ledinhbao/blog/packages/models"
@@ -52,7 +50,6 @@ func loadDatabase(dbconfig core.Config) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(">>>>> HERE >>>>", log)
 	log.Info("database created",
 		zap.String("dialect", dialect),
 	)

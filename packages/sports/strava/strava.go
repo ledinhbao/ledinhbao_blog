@@ -2,7 +2,6 @@ package strava
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -40,7 +39,6 @@ func InitializeRoutes(engine *gin.Engine) {
 }
 
 func init() {
-	fmt.Println("Called Strava Package init")
 	config = &Config{
 		ClientID:          "44814",
 		ClientSecret:      "c44a13c4308b3b834320ae5e3648d6c7855980a3",
