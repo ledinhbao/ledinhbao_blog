@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -105,6 +106,20 @@ func stravaGetAccessTokenForLink(link Link, db *gorm.DB) (StravaToken, error) {
 // GetOAuthURL return oath/authorize url with callback_uri=callback
 func GetOAuthURL(callback string) string {
 	// TODO implement if scope changes
-	formatted := "https://www.strava.com/oauth/authorize?client_id=44814&redirect_uri=%s&response_type=code&approval_prompt=auto&scope=activity:read"
-	return fmt.Sprintf(formatted, callback)
+
+	urlValues := url.Values{}
+	urlValues.Set("client_id", config.ClientID)
+	urlValues.Set("redirect_uri", callback)
+	urlValues.Set("response_type", "code")
+	urlValues.Set("approval_prompt", "auto")
+	urlValues.Set("scope", "activity:read")
+
+	baseURL, err := url.Parse("https://www.strava.com")
+	if err != nil {
+		return ""
+	}
+	baseURL.Path += "oauth/authorize"
+	baseURL.RawQuery = urlValues.Encode()
+
+	return baseURL.String()
 }
