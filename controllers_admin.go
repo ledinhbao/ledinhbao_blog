@@ -15,8 +15,8 @@ import (
 func initNonAuthAdminRoutes(r *gin.RouterGroup) {
 	r.GET("/login", showAdminLoginPage)
 	r.POST("/postLogin", adminPostLogin)
-	r.GET("/admin/register", showAdminRegisterPage)
-	r.POST("/admin/register", postAdminRegister)
+	r.GET("/register", showAdminRegisterPage)
+	r.POST("/register", postAdminRegister)
 }
 
 func initAdminRoutes(r *gin.RouterGroup) {
@@ -26,7 +26,7 @@ func initAdminRoutes(r *gin.RouterGroup) {
 }
 
 func showAdminRegisterPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "admin-register", gin.H{
+	ginview.HTML(c, http.StatusOK, "admin-register.html", gin.H{
 		"message": "Admin Register",
 	})
 }
