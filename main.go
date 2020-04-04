@@ -6,6 +6,7 @@ import (
 
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
+	"github.com/gin-contrib/location"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/contrib/static"
@@ -67,6 +68,7 @@ func main() {
 
 	// router.Use(ginzap.Ginzap(log, time.RFC3339, true))
 	router.Use(ginzap.RecoveryWithZap(log, true))
+	router.Use(location.Default())
 
 	cookieName := randString()
 	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))

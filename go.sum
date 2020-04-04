@@ -14,6 +14,8 @@ github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZm
 github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5/go.mod h1:a2zkGnVExMxdzMo3M0Hi/3sEU+cWnZpSni0O6/Yb/P0=
 github.com/foolin/goview v0.3.0 h1:q5wKwXKEFb20dMRfYd59uj5qGCo7q4L9eVHHUjmMWrg=
 github.com/foolin/goview v0.3.0/go.mod h1:OC1VHC4FfpWymhShj8L1Tc3qipFmrmm+luAEdTvkos4=
+github.com/gin-contrib/location v0.0.1 h1:5ZtqDL5WA6YXNuT5nGp55K3QSqJMYIl+2d7Lnwh9SGA=
+github.com/gin-contrib/location v0.0.1/go.mod h1:9C1YVXyynELHLp926mcsDIndz4Qi+epKkE++ap5il3U=
 github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3/go.mod h1:VJ0WA2NBN22VlZ2dKZQPAPnyWw5XTlK1KymzLKsr59s=
 github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE=
 github.com/gin-contrib/sse v0.1.0/go.mod h1:RHrZQHXnP2xjPF+u1gW/2HnVO7nvIa9PG3Gm+fLHvGI=

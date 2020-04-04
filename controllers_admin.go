@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/foolin/goview/supports/ginview"
+	"github.com/gin-contrib/location"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -114,12 +116,16 @@ func displayAdminDashboard(c *gin.Context) {
 	var clubList []strava.StravaClub
 	db.Find(&clubList)
 
+	url := location.Get(c)
+	stravaCallbackURL := fmt.Sprintf("%s://%s/admin/strava", url.Scheme, url.Host)
+
 	ginview.HTML(c, http.StatusOK, "admin-dashboard", gin.H{
 		"user":              userInfo,
 		"strava_link":       stravaLink,
 		"athelete":          stravaInfo,
 		"IsStravaConnected": stravaLink.ID > 0,
 		"StravaRevokeURL":   strava.ActiveConfig().GetRevokeURLFor(stravaInfo.Username),
+		"stravaAuthURL":     strava.GetOAuthURL(stravaCallbackURL),
 
 		"IsStravaSubscribed":   stravaSetting.ID > 0,
 		"stravaSubscriptionID": stravaSetting.Value,

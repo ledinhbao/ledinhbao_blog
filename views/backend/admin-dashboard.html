@@ -55,7 +55,7 @@
                     </div>
                     <div class="column">
                         {{ if .IsStravaConnected }}<a class="button" href="{{ .StravaRevokeURL }}">Revoke</a>
-                        {{ else }}<a class="button is-info" href="https://www.strava.com/oauth/authorize?client_id=44814&redirect_uri=http://localhost:9096/admin/strava&response_type=code&approval_prompt=auto&scope=activity:read">Link Strava</a>
+                        {{ else }}<a class="button is-info" href="{{ if .stravaAuthURL}}{{ .stravaAuthURL }}{{end}}">Link Strava</a>
                         {{ end }}
                     </div>
                 </div>
