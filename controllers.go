@@ -10,15 +10,21 @@ import (
 	"github.com/ledinhbao/blog/packages/models"
 )
 
-func initializeRoutes(router *gin.Engine) {
+func initializeRoutes(router *gin.Engine, middlewares ...gin.HandlerFunc) {
+	for _, item := range middlewares {
+		router.Use(item)
+	}
+
 	router.GET("/logout", logout)
 	router.GET("/login", showLoginPage)
 	router.POST("/login", login)
+
+	router.GET("/", displayHomePage)
 }
 
 func displayHomePage(c *gin.Context) {
 	ginview.HTML(c, http.StatusOK, "homepage", gin.H{
-		"pageTitle": "Tan Phu Challenge",
+		"pageTitle": "Le Dinh Bao's Blog - A developer who can run a marathon",
 	})
 }
 
