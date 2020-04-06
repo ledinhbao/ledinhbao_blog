@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
@@ -89,17 +88,7 @@ func main() {
 	})
 
 	// Back-end Template setup
-	backendViewMiddleware := ginview.NewMiddleware(goview.Config{
-		Root:         "views/backend",
-		Extension:    ".html",
-		Master:       "layout/master",
-		Partials:     []string{},
-		DisableCache: true,
-		Funcs: template.FuncMap{
-			"formatInKilometer": formatInKilometer,
-			"formatStravaTime":  formatStravaTime,
-		},
-	})
+	backendViewMiddleware := ginviewBackendTemplateMiddleware()
 
 	adminGeneralRoute := router.Group("/admin", backendViewMiddleware)
 	initNonAuthAdminRoutes(adminGeneralRoute)

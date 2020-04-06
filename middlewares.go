@@ -1,8 +1,11 @@
 package main
 
 import (
+	"html/template"
 	"net/http"
 
+	"github.com/foolin/goview"
+	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -25,4 +28,18 @@ func dbHandler(db *gorm.DB) gin.HandlerFunc {
 		c.Set(dbInstance, db)
 		c.Next()
 	}
+}
+
+func ginviewBackendTemplateMiddleware() gin.HandlerFunc {
+	return ginview.NewMiddleware(goview.Config{
+		Root:         "views/backend",
+		Extension:    ".html",
+		Master:       "layout/master",
+		Partials:     []string{},
+		DisableCache: true,
+		Funcs: template.FuncMap{
+			"formatInKilometer": formatInKilometer,
+			"formatStravaTime":  formatStravaTime,
+		},
+	})
 }
