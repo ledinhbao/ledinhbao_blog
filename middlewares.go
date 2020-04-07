@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -9,17 +10,45 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/ledinhbao/blog/packages/models"
 )
 
 // AuthRequired is a middleware to check if the user is authorized or not.
 func AuthRequired(c *gin.Context) {
+	fmt.Println("AuthRequired")
 	session := sessions.Default(c)
-	user := session.Get(userkey)
-	if user == nil {
+	user, ok := session.Get(authUser).(*models.User)
+	if !ok || user.ID == 0 {
 		// unauthorize will be transfer to /admin/login
 		session.AddFlash("Unauthorized!", "is-error")
 		session.Save()
-		c.Redirect(http.StatusPermanentRedirect, "/admin/login")
+		c.Redirect(http.StatusFound, "/admin/login")
+		c.Abort()
+	} else if user.Role < RoleAdmin {
+		ginview.HTML(c, http.StatusUnauthorized, "admin-unauthorized.html", gin.H{})
+		c.Abort()
+	} else {
+		c.Next()
+	}
+}
+
+// SuperAdminRequired is middleware to check user is SuperAdmin or not
+func SuperAdminRequired() gin.HandlerFunc {
+	fmt.Println("SuperAdminRequired")
+	return func(c *gin.Context) {
+		user, err := authUserFromSession(c)
+		switch err.(type) {
+		case noUserError, invalidUserError:
+			ginview.HTML(c, http.StatusUnauthorized, "admin-unauthorized.html", nil)
+			c.Abort()
+			return
+		}
+		if user.Role < RoleSuperAdmin {
+			ginview.HTML(c, http.StatusUnauthorized, "admin-unauthorized.html", nil)
+			c.Abort()
+		} else {
+			c.Next()
+		}
 	}
 }
 

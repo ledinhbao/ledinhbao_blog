@@ -16,15 +16,23 @@ import (
 
 func initNonAuthAdminRoutes(r *gin.RouterGroup) {
 	r.GET("/login", showAdminLoginPage)
-	r.POST("/postLogin", adminPostLogin)
+	r.POST("/login", adminAuthenticate)
 	r.GET("/register", showAdminRegisterPage)
 	r.POST("/register", postAdminRegister)
+
+	r.GET("/unauthorized", adminUnauthorized)
 }
 
 func initAdminRoutes(r *gin.RouterGroup) {
 	r.GET("/", displayAdminIndex)
 	r.GET("/dashboard", displayAdminDashboard)
 	r.GET("/logout", adminLogout)
+}
+
+func initSuperAdminRoutes(r *gin.RouterGroup) {
+	r.GET("/", func(c *gin.Context) {
+		ginview.HTML(c, http.StatusOK, "su-homepage", gin.H{})
+	})
 }
 
 func showAdminRegisterPage(c *gin.Context) {
@@ -62,25 +70,35 @@ func showAdminLoginPage(c *gin.Context) {
 	})
 }
 
-func adminPostLogin(c *gin.Context) {
+func adminAuthenticate(c *gin.Context) {
 	db := c.MustGet(dbInstance).(*gorm.DB)
 	user := models.User{}
 	passwordFromRequest := c.PostForm("password")
 	db.Where("username = ?", c.PostForm("username")).First(&user)
 
+	if user.ID == 0 {
+		// User not found
+		ginview.HTML(c, http.StatusUnauthorized, "admin-login.html", gin.H{
+			"errors": []string{"Username or password is incorrect."},
+		})
+	}
 	if user.TryPassword(passwordFromRequest) {
+		if user.Role < RoleAdmin {
+			ginview.HTML(c, http.StatusUnauthorized, "admin-login.html", gin.H{
+				"errors": []string{"You are not authorized to view this page."},
+			})
+			return
+		}
 		session := sessions.Default(c)
+		session.Set(authUser, user)
 		session.Set(userkey, user.Username)
 		session.Set(authUserID, user.ID)
 		session.Save()
 		c.Redirect(http.StatusFound, "/admin/dashboard")
-		// c.Abort()
 	} else {
-		session := sessions.Default(c)
-		session.AddFlash("Wrong password", "is-error")
-		session.Save()
-		c.Redirect(http.StatusMovedPermanently, "/admin/login")
-		// c.Abort()
+		ginview.HTML(c, http.StatusUnauthorized, "admin-login.html", gin.H{
+			"errors": []string{"Username or password is incorrect."},
+		})
 	}
 }
 
@@ -89,6 +107,10 @@ func adminLogout(c *gin.Context) {
 	session.Clear()
 	session.Save()
 	c.Redirect(http.StatusFound, "/admin/login")
+}
+
+func adminUnauthorized(c *gin.Context) {
+	ginview.HTML(c, http.StatusUnauthorized, "admin-unauthorized.html", nil)
 }
 
 func displayAdminDashboard(c *gin.Context) {
