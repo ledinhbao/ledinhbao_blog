@@ -19,7 +19,12 @@ func initializeRoutes(router *gin.Engine, middlewares ...gin.HandlerFunc) {
 	router.GET("/login", showLoginPage)
 	router.POST("/login", login)
 
-	router.GET("/", displayHomePage)
+	router.GET("/", comingSoonPage)
+	router.NoRoute(comingSoonPage)
+}
+
+func comingSoonPage(c *gin.Context) {
+	ginview.HTML(c, http.StatusOK, "coming-soon.html", nil)
 }
 
 func displayHomePage(c *gin.Context) {
