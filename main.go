@@ -7,7 +7,6 @@ import (
 	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-contrib/location"
 	ginzap "github.com/gin-contrib/zap"
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -23,6 +22,15 @@ const (
 	stravaAuthURL = "https://www.strava.com/oauth/authorize?client_id=44814&" +
 		"redirect_uri=localhost:9096&response_type=code&approval_prompt=auto&scope=activity:read"
 	authUserID = "AuthUserID"
+	authUser   = string("AuthUser")
+	appName    = string("LDBBlog")
+	appUUID    = string("29fjkshD87HSfwy")
+
+	RoleSuperAdmin = int(89)
+	RoleAdmin      = int(55)
+	RoleModerator  = int(34)
+	RoleWriter     = int(21)
+	RoleViewer     = int(1)
 )
 
 var log *zap.Logger
@@ -64,13 +72,15 @@ func main() {
 	modelMigration(db)
 
 	router := gin.New()
+	if appMode == "debug" {
+		router = gin.Default()
+	}
 
 	// router.Use(ginzap.Ginzap(log, time.RFC3339, true))
 	router.Use(ginzap.RecoveryWithZap(log, true))
 	router.Use(location.Default())
 
-	cookieName := randString()
-	router.Use(sessions.Sessions("ledinhbao_com_sessions", sessions.NewCookieStore([]byte(cookieName))))
+	initSession(router)
 
 	// Set database instance for global use
 	router.Use(dbHandler(db))
@@ -96,6 +106,10 @@ func main() {
 	adminRouter := router.Group("/admin", backendViewMiddleware)
 	adminRouter.Use(AuthRequired)
 	initAdminRoutes(adminRouter)
+
+	suRouter := router.Group("/su", backendViewMiddleware)
+	suRouter.Use(SuperAdminRequired())
+	initSuperAdminRoutes(suRouter)
 
 	initializeRoutes(router)
 	inititalizePostRoutes(router)
