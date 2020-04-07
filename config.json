@@ -1,14 +1,15 @@
 {
     "application": {
         "mode":"debug", 
-        "admin-prefix": "/admin"
+        "admin-prefix": "/admin",
+        "db-profile": "sqlite3"
     },
     "database": {
-        "debug": {
+        "sqlite3": {
             "dialect": "sqlite3",
             "database": "database.db"
         },
-        "release": {
+        "mysql": {
             "dialect": "mysql",
             "username": "ledinhbao_axis",
             "password": "L93hxwPc8r",

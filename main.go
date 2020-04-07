@@ -62,7 +62,8 @@ func main() {
 	}
 
 	// LOAD database
-	dbConfig, err := config.ConfigValueForKey("database." + appMode)
+	dbProfile, _ := config.StringValueForKey("application.db-profile")
+	dbConfig, err := config.ConfigValueForKey("database." + dbProfile)
 	db, err := loadDatabase(dbConfig)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to load database information: %s", err.Error()))
