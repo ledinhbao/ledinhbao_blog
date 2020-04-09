@@ -9,6 +9,7 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/thinkerou/favicon"
 	"go.uber.org/zap"
 
 	"github.com/ledinhbao/blog/core"
@@ -80,6 +81,7 @@ func main() {
 	// router.Use(ginzap.Ginzap(log, time.RFC3339, true))
 	router.Use(ginzap.RecoveryWithZap(log, true))
 	router.Use(location.Default())
+	router.Use(favicon.New("./favicon.ico"))
 
 	initSession(router)
 

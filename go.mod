@@ -15,6 +15,7 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/mitchellh/mapstructure v1.2.2
 	github.com/stretchr/testify v1.5.1
+	github.com/thinkerou/favicon v0.1.0
 	go.uber.org/zap v1.14.1
 	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df
 )
