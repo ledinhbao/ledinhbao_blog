@@ -9,6 +9,7 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/thinkerou/favicon"
 	"go.uber.org/zap"
 
@@ -36,6 +37,7 @@ const (
 
 var log *zap.Logger
 var logCfg zap.Config
+var gdb *gorm.DB
 
 // Application required, panic if one of these failed to achieve:
 // 	- Config object is loaded.
@@ -72,6 +74,7 @@ func main() {
 	defer db.Close()
 	// Model Migration
 	modelMigration(db)
+	gdb = db
 
 	router := gin.New()
 	if appMode == "debug" {
