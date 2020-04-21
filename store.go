@@ -3,8 +3,6 @@ package main
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/ledinhbao/blog/core"
-	"github.com/ledinhbao/blog/packages/models"
-	"github.com/ledinhbao/blog/packages/sports/strava"
 	"go.uber.org/zap"
 
 	// log "github.com/sirupsen/logrus"
@@ -13,21 +11,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
-
-func modelMigration(db *gorm.DB) {
-	db.AutoMigrate(core.Setting{})
-
-	// Model migration
-	db.AutoMigrate(&models.User{})
-	db.AutoMigrate(&models.Post{})
-
-	// Strava Module
-	db.AutoMigrate(&strava.Link{})
-	db.AutoMigrate(&strava.Athlete{})
-	db.AutoMigrate(&strava.Activity{})
-	db.AutoMigrate(&strava.Athlete{})
-	db.AutoMigrate(&strava.StravaClub{})
-}
 
 func loadDatabase(dbconfig core.Config) (*gorm.DB, error) {
 	var conn core.DatabaseConnection
