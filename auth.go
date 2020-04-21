@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/ledinhbao/blog/packages/models"
+	"github.com/ledinhbao/blog/core"
 )
 
 func initSession(engine *gin.Engine) {
@@ -13,5 +13,5 @@ func initSession(engine *gin.Engine) {
 	engine.Use(sessions.Sessions(appName+"-sessions", cookieStore))
 
 	// Register User model
-	gob.Register(&models.User{})
+	gob.Register(&core.User{})
 }

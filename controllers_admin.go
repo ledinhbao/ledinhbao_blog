@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/ledinhbao/blog/core"
-	"github.com/ledinhbao/blog/packages/models"
 	"github.com/ledinhbao/blog/packages/sports/strava"
 )
 
@@ -42,11 +41,11 @@ func showAdminRegisterPage(c *gin.Context) {
 }
 
 func postAdminRegister(c *gin.Context) {
-	var formData = models.User{}
+	var formData = core.User{}
 	formData.Username = c.PostForm("username")
 	formData.SetPassword(c.PostForm("password"))
 	formData.PasswordConfirm = c.PostForm("password2")
-	formData.Role = 1
+	formData.Rank = 1
 
 	message := ""
 
@@ -72,7 +71,7 @@ func showAdminLoginPage(c *gin.Context) {
 
 func adminAuthenticate(c *gin.Context) {
 	db := c.MustGet(dbInstance).(*gorm.DB)
-	user := models.User{}
+	user := core.User{}
 	passwordFromRequest := c.PostForm("password")
 	db.Where("username = ?", c.PostForm("username")).First(&user)
 
@@ -83,7 +82,7 @@ func adminAuthenticate(c *gin.Context) {
 		})
 	}
 	if user.TryPassword(passwordFromRequest) {
-		if user.Role < RoleAdmin {
+		if user.Rank < RoleAdmin {
 			ginview.HTML(c, http.StatusUnauthorized, "admin-login.html", gin.H{
 				"errors": []string{"You are not authorized to view this page."},
 			})
@@ -94,6 +93,7 @@ func adminAuthenticate(c *gin.Context) {
 		session.Set(userkey, user.Username)
 		session.Set(authUserID, user.ID)
 		session.Save()
+		core.AddUserToSession(user, c)
 		c.Redirect(http.StatusFound, "/admin/dashboard")
 	} else {
 		ginview.HTML(c, http.StatusUnauthorized, "admin-login.html", gin.H{
@@ -118,7 +118,7 @@ func displayAdminDashboard(c *gin.Context) {
 	userID := session.Get(authUserID)
 
 	db := c.MustGet(dbInstance).(*gorm.DB)
-	userInfo := models.User{}
+	userInfo := core.User{}
 	stravaInfo := strava.Athlete{}
 	stravaLink := strava.Link{}
 

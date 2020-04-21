@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/ledinhbao/blog/packages/models"
+	"github.com/ledinhbao/blog/core"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -39,14 +39,14 @@ func (invalidUserError) Error() string {
 	return "User's data is invalid"
 }
 
-func authUserFromSession(c *gin.Context) (models.User, error) {
+func authUserFromSession(c *gin.Context) (core.User, error) {
 	s := sessions.Default(c)
-	user, ok := s.Get(authUser).(*models.User)
+	user, ok := s.Get(authUser).(*core.User)
 	if !ok {
-		return models.User{}, noUserError{}
+		return core.User{}, noUserError{}
 	}
 	if user.ID <= 0 {
-		return models.User{}, invalidUserError{}
+		return core.User{}, invalidUserError{}
 	}
 	return *user, nil
 }

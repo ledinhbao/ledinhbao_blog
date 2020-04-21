@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"github.com/ledinhbao/blog/packages/models"
+	"github.com/ledinhbao/blog/core"
 )
 
 func initializeRoutes(router *gin.Engine, middlewares ...gin.HandlerFunc) {
@@ -43,7 +43,7 @@ func login(c *gin.Context) {
 	password := c.PostForm("password")
 
 	db := c.MustGet(dbInstance).(*gorm.DB)
-	user := models.User{}
+	user := core.User{}
 	db.Where("username = ?", username).First(&user)
 	if user.Username == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{

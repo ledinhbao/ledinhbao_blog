@@ -14,6 +14,7 @@ require (
 	github.com/imdario/mergo v0.3.9
 	github.com/jinzhu/gorm v1.9.12
 	github.com/mitchellh/mapstructure v1.2.2
+	github.com/sirupsen/logrus v1.5.0
 	github.com/stretchr/testify v1.5.1
 	github.com/thinkerou/favicon v0.1.0
 	go.uber.org/zap v1.14.1

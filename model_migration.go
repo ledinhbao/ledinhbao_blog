@@ -11,7 +11,7 @@ func modelMigration(db *gorm.DB) {
 	db.AutoMigrate(core.Setting{})
 
 	// Model migration
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&core.User{})
 	db.AutoMigrate(&models.Post{})
 
 	// Strava Module

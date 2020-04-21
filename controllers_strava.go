@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"github.com/ledinhbao/blog/packages/models"
+	"github.com/ledinhbao/blog/core"
 	"github.com/ledinhbao/blog/packages/sports/strava"
 )
 
@@ -21,7 +21,7 @@ func initStravaRoutes(r *gin.RouterGroup) {
 func stravaAddClub(c *gin.Context) {
 	db := c.MustGet(dbInstance).(*gorm.DB)
 	session := sessions.Default(c)
-	var userInfo models.User
+	var userInfo core.User
 	db.Where("id = ?", session.Get(authUserID)).First(&userInfo)
 	ginview.HTML(c, http.StatusOK, "admin-strava-add-club", gin.H{
 		"user": userInfo,

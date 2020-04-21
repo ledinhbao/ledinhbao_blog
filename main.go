@@ -110,7 +110,8 @@ func main() {
 	initNonAuthAdminRoutes(adminGeneralRoute)
 
 	adminRouter := router.Group("/admin", backendViewMiddleware)
-	adminRouter.Use(AuthRequired)
+	adminRouter.Use(core.UserRankRequired(core.RankAdmin, UnauthorizedHandler))
+	// adminRouter.Use(AuthRequired)
 	initAdminRoutes(adminRouter)
 
 	suRouter := router.Group("/su", backendViewMiddleware)
