@@ -109,6 +109,7 @@ func main() {
 	adminGeneralRoute := router.Group("/admin", backendViewMiddleware)
 	initNonAuthAdminRoutes(adminGeneralRoute)
 
+	adminRequired := core.UserRankRequired(core.RankAdmin, UnauthorizedHandler)
 	adminRouter := router.Group("/admin", backendViewMiddleware)
 	adminRouter.Use(core.UserRankRequired(core.RankAdmin, UnauthorizedHandler))
 	// adminRouter.Use(AuthRequired)
@@ -120,6 +121,7 @@ func main() {
 
 	initializeRoutes(router)
 	inititalizePostRoutes(router)
+	initCustomerRoute(router, backendViewMiddleware, adminRequired)
 
 	initStravaModule(appMode, &config, router, backendViewMiddleware)
 	router.Run(":9096")
