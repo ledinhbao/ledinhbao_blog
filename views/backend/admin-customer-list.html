@@ -1,0 +1,32 @@
+{{ define "content" }}
+
+{{ include "error-notification" }}
+{{ include "success-notification" }}
+<div class="columns">
+    <div class="column">
+        <table class="table is-striped">
+            <thead>
+                <tr>
+                    <td>ID</td>
+                    <td>Fullname</td>
+                    <td></td>
+                    <td></td>
+                    <td>Action</td>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .customers }}
+                <tr>
+                    <td>{{ .ID }}</td>
+                    <td>{{ .Fullname }}</td>
+                    <td>{{ .DOB }}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{ end }}

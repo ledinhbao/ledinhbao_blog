@@ -1,0 +1,12 @@
+{{ define "success-notification" }}
+
+{{ if .successNotification }}
+{{ range .successNotification }}
+<div class="notification is-success">
+  <button class="delete"></button>
+  {{ . }}
+</div>
+{{ end }}
+{{ end }}
+
+{{ end }}

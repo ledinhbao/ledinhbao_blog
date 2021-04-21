@@ -1,0 +1,12 @@
+{{ define "error-notification" }}
+
+{{ if .errorNotification }}
+{{ range .errorNotification }}
+<div class="notification is-danger">
+  <button class="delete"></button>
+  {{ . }}
+</div>
+{{ end }}
+{{ end }}
+
+{{ end }}
